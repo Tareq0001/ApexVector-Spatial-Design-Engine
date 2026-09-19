@@ -3,41 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ApexVector | Spatial Collaborative UI Design & Vector Engine</title>
-    <meta name="description" content="Institutional alternative to Figma. High-performance spatial vector canvas, reactive AST auto-layout, real-time simulated multiplayer presence, smart Bezier engine, and DevMode CSS/Tailwind compiler.">
-    
+    <title>ApexVector | Spatial Collaborative UI Design & 3D Vector Engine</title>
+    <meta name="description" content="Next-generation browser alternative to Figma. 3D Spatial Exploded Layer View, AI Prompt-to-UI Generative Engine, Sub-pixel Vector Geometry, Real-time Multiplayer Presence, and Multi-target DevMode Compiler.">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Pro Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         :root {
-            --bg-canvas: #12141a;
-            --bg-panel: #1a1d26;
-            --bg-panel-header: #151820;
-            --bg-hover: rgba(255, 255, 255, 0.06);
-            --bg-active: rgba(29, 155, 240, 0.15);
+            --bg-void: #08090d;
+            --bg-canvas: #0d0f17;
+            --bg-panel: #131620;
+            --bg-panel-sub: #181b28;
+            --bg-panel-header: #0e1017;
             --border-ui: rgba(255, 255, 255, 0.08);
-            --border-focus: #00f0ff;
-            --accent-blue: #0d99ff;
+            --border-highlight: rgba(0, 240, 255, 0.4);
+            --border-active: #0d99ff;
             --accent-cyan: #00f0ff;
-            --accent-purple: #9d4edd;
-            --accent-pink: #f72585;
+            --accent-blue: #0d99ff;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
             --accent-emerald: #10b981;
             --accent-amber: #f59e0b;
-            --text-main: #f1f5f9;
-            --text-muted: #8892b0;
-            --text-dim: #4b5563;
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --font-sans: 'Inter', -apple-system, sans-serif;
             --font-display: 'Syne', sans-serif;
             --font-mono: 'Fira Code', monospace;
-            --topbar-h: 46px;
-            --sidebar-w: 260px;
-            --inspector-w: 280px;
+            --topbar-h: 52px;
+            --sidebar-w: 270px;
+            --inspector-w: 310px;
         }
 
         * {
@@ -52,12 +53,12 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: var(--bg-canvas);
+            background: var(--bg-void);
             font-family: var(--font-sans);
             color: var(--text-main);
         }
 
-        /* Top Navigation Toolbar */
+        /* Topbar Header */
         .topbar {
             position: absolute;
             top: 0;
@@ -69,8 +70,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 14px;
-            z-index: 100;
+            padding: 0 16px;
+            z-index: 1000;
         }
 
         .topbar-left {
@@ -85,87 +86,139 @@
             gap: 8px;
             font-family: var(--font-display);
             font-weight: 800;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             color: #fff;
-            letter-spacing: -0.5px;
-            background: rgba(13, 153, 255, 0.12);
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(13, 153, 255, 0.3);
             text-decoration: none;
+            background: linear-gradient(135deg, rgba(13, 153, 255, 0.2), rgba(0, 240, 255, 0.1));
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            transition: all 0.2s;
+        }
+
+        .brand-pill:hover {
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+            border-color: var(--accent-cyan);
         }
 
         .brand-pill i {
             color: var(--accent-cyan);
+            font-size: 1.1rem;
         }
 
-        .file-info {
+        /* AI Prompt Bar */
+        .ai-prompt-bar {
             display: flex;
             align-items: center;
             gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 20px;
+            padding: 4px 14px;
             font-size: 0.8rem;
-            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .file-name {
-            color: var(--text-main);
-            font-weight: 600;
+        .ai-prompt-bar:hover {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+            background: rgba(168, 85, 247, 0.1);
         }
 
-        .tool-group {
+        .ai-sparkle {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* Center Tools Bar */
+        .center-tools {
             display: flex;
             align-items: center;
-            background: rgba(0, 0, 0, 0.35);
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-ui);
-            border-radius: 8px;
-            padding: 2px;
-            gap: 2px;
+            padding: 4px 6px;
+            border-radius: 10px;
         }
 
         .tool-btn {
-            width: 32px;
-            height: 30px;
+            width: 34px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: none;
             background: transparent;
+            border: none;
             color: var(--text-muted);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.15s ease;
+            font-size: 0.9rem;
             position: relative;
+            transition: all 0.15s;
         }
 
         .tool-btn:hover {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.08);
             color: var(--text-main);
         }
 
         .tool-btn.active {
             background: var(--accent-blue);
             color: #fff;
-            box-shadow: 0 2px 8px rgba(13, 153, 255, 0.4);
+            box-shadow: 0 0 12px rgba(13, 153, 255, 0.5);
         }
 
-        .tool-btn .shortcut-hint {
+        .tool-btn .kbd {
             position: absolute;
-            bottom: -18px;
+            bottom: -22px;
             background: #000;
             color: #fff;
             font-size: 0.65rem;
             font-family: var(--font-mono);
-            padding: 2px 4px;
+            padding: 2px 5px;
             border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             display: none;
-            pointer-events: none;
-            z-index: 200;
             white-space: nowrap;
+            z-index: 2000;
+            pointer-events: none;
         }
 
-        .tool-btn:hover .shortcut-hint {
+        .tool-btn:hover .kbd {
             display: block;
+        }
+
+        .tool-sep {
+            width: 1px;
+            height: 18px;
+            background: var(--border-ui);
+            margin: 0 4px;
+        }
+
+        /* 3D Spatial Toggle Button (THE FIGMA KILLER) */
+        .spatial-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(0, 240, 255, 0.2));
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .spatial-toggle-btn:hover, .spatial-toggle-btn.active {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            color: #000;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.6);
+            transform: scale(1.03);
         }
 
         .topbar-right {
@@ -174,80 +227,69 @@
             gap: 12px;
         }
 
-        .multiplayer-stack {
+        .multiplayer-avatars {
             display: flex;
             align-items: center;
-            padding-right: 8px;
+            padding-right: 12px;
             border-right: 1px solid var(--border-ui);
         }
 
-        .avatar-bubble {
-            width: 26px;
-            height: 26px;
+        .m-avatar {
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 700;
+            font-size: 0.72rem;
+            font-weight: 800;
+            margin-left: -8px;
             border: 2px solid var(--bg-panel-header);
-            margin-left: -6px;
             cursor: pointer;
             position: relative;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
-        .avatar-bubble:first-child {
-            margin-left: 0;
-        }
+        .m-avatar:first-child { margin-left: 0; }
+        .m-avatar.av-tareq { background: #00f0ff; color: #000; }
+        .m-avatar.av-sarah { background: #a855f7; color: #fff; }
+        .m-avatar.av-kenji { background: #10b981; color: #fff; }
+        .m-avatar.av-alex  { background: #f59e0b; color: #fff; }
 
-        .avatar-bubble.av-sarah { background: #9d4edd; color: #fff; }
-        .avatar-bubble.av-kenji { background: #10b981; color: #fff; }
-        .avatar-bubble.av-alex  { background: #f59e0b; color: #fff; }
-        .avatar-bubble.av-tareq { background: #00f0ff; color: #000; }
-
-        .btn-action {
+        .btn-ui {
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 7px 14px;
+            border-radius: 8px;
             font-size: 0.78rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             border: none;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
 
-        .btn-ghost {
+        .btn-ui-ghost {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
             border: 1px solid var(--border-ui);
         }
-        .btn-ghost:hover {
+        .btn-ui-ghost:hover {
             background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .btn-primary {
+        .btn-ui-primary {
             background: linear-gradient(135deg, #0d99ff, #00f0ff);
             color: #000;
-            font-weight: 700;
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
         }
-        .btn-primary:hover {
-            opacity: 0.9;
-            box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
-        }
-
-        .zoom-badge {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            padding: 4px 8px;
-            border-radius: 4px;
-            background: rgba(0, 0, 0, 0.2);
-            cursor: pointer;
+        .btn-ui-primary:hover {
+            opacity: 0.92;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
         }
 
-        /* Workspace Main Layout */
+        /* Workspace Grid Layout */
         .workspace {
             position: absolute;
             top: var(--topbar-h);
@@ -258,71 +300,71 @@
             overflow: hidden;
         }
 
-        /* Left Sidebar: Layers & Assets */
-        .sidebar-left {
+        /* Left Panel */
+        .panel-left {
             width: var(--sidebar-w);
             background: var(--bg-panel);
             border-right: 1px solid var(--border-ui);
             display: flex;
             flex-direction: column;
-            z-index: 10;
+            z-index: 100;
         }
 
-        .sidebar-tabs {
+        .panel-tabs {
             display: flex;
             border-bottom: 1px solid var(--border-ui);
             background: var(--bg-panel-header);
         }
 
-        .sidebar-tab {
+        .panel-tab {
             flex: 1;
-            padding: 10px 0;
+            padding: 12px 0;
             text-align: center;
             font-size: 0.78rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-muted);
             cursor: pointer;
             border-bottom: 2px solid transparent;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
 
-        .sidebar-tab.active {
+        .panel-tab.active {
             color: var(--accent-cyan);
             border-bottom-color: var(--accent-cyan);
         }
 
-        .layers-tree {
+        .tree-container {
             flex: 1;
             overflow-y: auto;
-            padding: 8px 4px;
+            padding: 8px 6px;
         }
 
-        .layer-item {
+        .tree-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 10px;
+            padding: 7px 10px;
             border-radius: 6px;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             cursor: pointer;
             margin-bottom: 2px;
-            transition: background 0.15s ease;
+            transition: all 0.15s;
         }
 
-        .layer-item:hover {
-            background: var(--bg-hover);
+        .tree-item:hover {
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
         }
 
-        .layer-item.selected {
+        .tree-item.selected {
             background: rgba(13, 153, 255, 0.2);
             color: #fff;
             font-weight: 600;
-            border-left: 3px solid var(--accent-blue);
+            border-left: 3px solid var(--accent-cyan);
         }
 
-        .layer-left {
+        .tree-item-title {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -331,36 +373,23 @@
             white-space: nowrap;
         }
 
-        .layer-item i {
-            width: 14px;
-            text-align: center;
+        .tree-item i {
             font-size: 0.8rem;
+            width: 16px;
+            text-align: center;
         }
 
-        .layer-actions {
-            display: none;
-            gap: 6px;
-            color: var(--text-dim);
-        }
-
-        .layer-item:hover .layer-actions,
-        .layer-item.selected .layer-actions {
-            display: flex;
-        }
-
-        .layer-actions i:hover {
-            color: var(--text-main);
-        }
-
-        /* Central Canvas Viewport */
+        /* Central Infinite Viewport */
         .canvas-viewport {
             flex: 1;
             position: relative;
-            background-color: #0d0f14;
+            background-color: var(--bg-canvas);
             background-image: 
-                radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-            background-size: 24px 24px;
+                radial-gradient(circle, rgba(255, 255, 255, 0.07) 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
             overflow: hidden;
+            perspective: 1600px;
+            perspective-origin: 50% 50%;
             cursor: default;
         }
 
@@ -371,137 +400,167 @@
             cursor: grabbing !important;
         }
 
-        .canvas-world {
+        .canvas-stage {
             position: absolute;
             top: 0;
             left: 0;
-            width: 10000px;
-            height: 10000px;
+            width: 12000px;
+            height: 12000px;
             transform-origin: 0 0;
-            will-change: transform;
+            transform-style: preserve-3d;
+            transition: transform 0.05s linear;
         }
 
-        /* Artboards on Canvas */
-        .artboard-frame {
+        /* When 3D Spatial Exploded View is Active */
+        .canvas-viewport.spatial-3d-active .canvas-stage {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 3D Exploded Layer Elevating Physics */
+        .canvas-viewport.spatial-3d-active .artboard-card {
+            transform-style: preserve-3d;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 240, 255, 0.2);
+            border-color: rgba(0, 240, 255, 0.6) !important;
+        }
+
+        .canvas-viewport.spatial-3d-active .elevate-l1 {
+            transform: translateZ(40px) !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        .canvas-viewport.spatial-3d-active .elevate-l2 {
+            transform: translateZ(80px) !important;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+        }
+        .canvas-viewport.spatial-3d-active .elevate-l3 {
+            transform: translateZ(120px) !important;
+            box-shadow: 0 40px 80px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Artboard Containers */
+        .artboard-card {
             position: absolute;
-            background: #141721;
+            background: #111420;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 14px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            overflow: hidden;
-            cursor: move;
+            border-radius: 20px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+            transform-style: preserve-3d;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            cursor: default;
         }
 
-        .artboard-title {
+        .artboard-header {
             position: absolute;
-            top: -24px;
+            top: -28px;
             left: 0;
-            font-size: 0.72rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 700;
             color: var(--text-muted);
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
-        .artboard-frame.selected {
-            outline: 2px solid var(--accent-blue);
-            box-shadow: 0 0 20px rgba(13, 153, 255, 0.3), 0 20px 40px rgba(0, 0, 0, 0.8);
+        .artboard-card.selected {
+            border-color: var(--accent-cyan) !important;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.4), 0 30px 70px rgba(0, 0, 0, 0.85);
         }
 
-        .artboard-frame.selected .artboard-title {
+        .artboard-card.selected .artboard-header {
             color: var(--accent-cyan);
         }
 
-        /* Mockup UI Elements inside Artboards */
-        .element-box {
+        /* Selectable & Draggable Elements */
+        .node-box {
             position: absolute;
             cursor: pointer;
-            transition: box-shadow 0.15s ease;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s;
+            transform-style: preserve-3d;
         }
 
-        .element-box.selected {
+        .node-box.selected {
             outline: 2px solid var(--accent-cyan) !important;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.6);
         }
 
-        /* Resize handles */
-        .resize-handle {
+        /* Selection Handles */
+        .handle-point {
             position: absolute;
             width: 8px;
             height: 8px;
             background: #fff;
-            border: 1.5px solid var(--accent-blue);
+            border: 2px solid var(--accent-blue);
             border-radius: 2px;
             display: none;
-            z-index: 50;
+            z-index: 100;
         }
 
-        .element-box.selected .resize-handle,
-        .artboard-frame.selected .resize-handle {
+        .node-box.selected .handle-point,
+        .artboard-card.selected .handle-point {
             display: block;
         }
 
-        .rh-nw { top: -4px; left: -4px; cursor: nwse-resize; }
-        .rh-ne { top: -4px; right: -4px; cursor: nesw-resize; }
-        .rh-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
-        .rh-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+        .hp-nw { top: -4px; left: -4px; cursor: nwse-resize; }
+        .hp-ne { top: -4px; right: -4px; cursor: nesw-resize; }
+        .hp-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+        .hp-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
 
         /* Simulated Multiplayer Cursors */
-        .mp-cursor {
+        .collab-cursor {
             position: absolute;
             pointer-events: none;
-            z-index: 500;
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 5000;
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
         }
 
-        .mp-cursor-pointer {
-            width: 14px;
-            height: 14px;
+        .collab-pointer {
+            width: 16px;
+            height: 16px;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
         }
 
-        .mp-cursor-tag {
+        .collab-pill {
             position: absolute;
             left: 14px;
             top: 14px;
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: #fff;
             white-space: nowrap;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
-        .cursor-sarah .mp-cursor-tag { background: #9d4edd; }
-        .cursor-kenji .mp-cursor-tag { background: #10b981; }
-        .cursor-alex .mp-cursor-tag  { background: #f59e0b; }
+        .collab-sarah .collab-pill { background: #a855f7; }
+        .collab-kenji .collab-pill { background: #10b981; }
+        .collab-alex .collab-pill  { background: #f59e0b; }
 
-        .cursor-comment-bubble {
+        .collab-comment {
             position: absolute;
             left: 14px;
             top: 36px;
-            background: rgba(20, 23, 33, 0.95);
+            background: rgba(19, 22, 32, 0.95);
             border: 1px solid var(--border-ui);
-            backdrop-filter: blur(8px);
-            padding: 6px 10px;
+            backdrop-filter: blur(12px);
+            padding: 8px 12px;
             border-radius: 8px;
-            font-size: 0.72rem;
-            color: var(--text-main);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-            max-width: 220px;
-            line-height: 1.3;
+            font-size: 0.75rem;
+            color: #f1f5f9;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            max-width: 240px;
+            line-height: 1.4;
         }
 
-        /* Right Sidebar: Inspector & Dev Mode */
-        .sidebar-right {
+        /* Right Inspector Panel */
+        .panel-right {
             width: var(--inspector-w);
             background: var(--bg-panel);
             border-left: 1px solid var(--border-ui);
             display: flex;
             flex-direction: column;
-            z-index: 10;
+            z-index: 100;
         }
 
         .inspector-tabs {
@@ -510,45 +569,45 @@
             background: var(--bg-panel-header);
         }
 
-        .inspector-tab {
+        .i-tab {
             flex: 1;
-            padding: 10px 0;
+            padding: 12px 0;
             text-align: center;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.78rem;
+            font-weight: 700;
             color: var(--text-muted);
             cursor: pointer;
             border-bottom: 2px solid transparent;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
 
-        .inspector-tab.active {
+        .i-tab.active {
             color: var(--accent-cyan);
             border-bottom-color: var(--accent-cyan);
         }
 
-        .inspector-tab.dev-mode.active {
-            color: #10b981;
-            border-bottom-color: #10b981;
+        .i-tab.dev.active {
+            color: var(--accent-emerald);
+            border-bottom-color: var(--accent-emerald);
         }
 
-        .inspector-body {
+        .inspector-content {
             flex: 1;
             overflow-y: auto;
-            padding: 14px;
+            padding: 16px;
         }
 
-        .prop-section {
-            margin-bottom: 18px;
+        .prop-group {
+            margin-bottom: 20px;
             padding-bottom: 14px;
             border-bottom: 1px solid var(--border-ui);
         }
 
-        .prop-title {
-            font-size: 0.7rem;
-            font-weight: 700;
+        .prop-header {
+            font-size: 0.72rem;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.8px;
             color: var(--text-muted);
             margin-bottom: 10px;
             display: flex;
@@ -556,351 +615,286 @@
             justify-content: space-between;
         }
 
-        .prop-grid-2 {
+        .prop-row-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-bottom: 8px;
         }
 
-        .prop-input-wrap {
+        .input-box {
             display: flex;
             align-items: center;
-            background: rgba(0, 0, 0, 0.35);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--border-ui);
             border-radius: 6px;
-            padding: 4px 8px;
+            padding: 5px 8px;
             gap: 6px;
         }
 
-        .prop-label {
-            font-size: 0.68rem;
+        .input-lbl {
             font-family: var(--font-mono);
+            font-size: 0.7rem;
             color: var(--text-dim);
             font-weight: 600;
-            width: 12px;
+            width: 14px;
         }
 
-        .prop-input {
+        .input-fld {
             width: 100%;
             background: transparent;
             border: none;
-            color: var(--text-main);
-            font-size: 0.78rem;
+            color: #fff;
             font-family: var(--font-mono);
+            font-size: 0.8rem;
             outline: none;
         }
 
-        .color-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid var(--border-ui);
-            border-radius: 6px;
-            padding: 6px 10px;
-        }
-
-        .color-swatch {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-        }
-
-        .color-hex {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            outline: none;
-        }
-
-        .btn-flex-row {
+        /* Multi-Target DevMode Syntax Tabs */
+        .code-lang-tabs {
             display: flex;
             gap: 4px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-ui);
-            border-radius: 6px;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.4);
             padding: 3px;
+            border-radius: 6px;
         }
 
-        .btn-flex-opt {
+        .code-lang-btn {
             flex: 1;
-            padding: 4px 0;
+            padding: 5px 0;
             background: transparent;
             border: none;
             color: var(--text-muted);
-            border-radius: 4px;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.15s ease;
+            border-radius: 4px;
+            transition: all 0.15s;
         }
 
-        .btn-flex-opt.active {
+        .code-lang-btn.active {
             background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            font-weight: 600;
+            color: var(--accent-cyan);
         }
 
-        /* DevMode Code Panel */
-        .code-box {
-            background: #0d0f14;
+        .code-snippet-box {
+            background: #090a10;
             border: 1px solid var(--border-ui);
             border-radius: 8px;
-            padding: 10px;
+            padding: 12px;
             font-family: var(--font-mono);
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             color: #38bdf8;
-            line-height: 1.4;
-            max-height: 220px;
+            line-height: 1.45;
+            max-height: 260px;
             overflow-y: auto;
             white-space: pre-wrap;
-            word-break: break-all;
             user-select: text;
             -webkit-user-select: text;
         }
 
-        .code-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-
-        .btn-copy {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--border-ui);
-            color: var(--text-muted);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.68rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .btn-copy:hover {
-            background: var(--accent-emerald);
-            color: #000;
-            font-weight: 700;
-        }
-
-        /* Prototype Presentation Modal */
-        .present-modal {
+        /* AI Prompt Modal */
+        .ai-modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.88);
-            backdrop-filter: blur(12px);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 3000;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
         }
 
-        .present-modal.show {
+        .ai-modal.open {
             display: flex;
         }
 
-        .present-toolbar {
-            position: absolute;
-            top: 20px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: rgba(26, 29, 38, 0.85);
-            border: 1px solid var(--border-ui);
-            padding: 8px 18px;
-            border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .phone-mockup {
-            width: 380px;
-            height: 740px;
-            background: #000;
-            border: 4px solid #2d323f;
-            border-radius: 48px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .phone-screen {
-            width: 100%;
-            height: 100%;
-            background: #11141e;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .dynamic-island {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 110px;
-            height: 28px;
-            background: #000;
+        .ai-card {
+            width: 540px;
+            background: #141724;
+            border: 1px solid rgba(168, 85, 247, 0.5);
             border-radius: 20px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 10px;
+            padding: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(168, 85, 247, 0.3);
         }
 
-        /* Toast notification */
-        .toast {
+        .ai-preset-chip {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-ui);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin: 4px 4px 4px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ai-preset-chip:hover {
+            border-color: var(--accent-purple);
+            color: #fff;
+            background: rgba(168, 85, 247, 0.2);
+        }
+
+        /* Interactive Toast */
+        .toast-msg {
             position: fixed;
             bottom: 24px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #10b981;
+            transform: translateX(-50%) translateY(80px);
+            background: linear-gradient(135deg, #0d99ff, #00f0ff);
             color: #000;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            box-shadow: 0 8px 24px rgba(0, 240, 255, 0.4);
+            z-index: 5000;
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 2000;
         }
 
-        .toast.show {
+        .toast-msg.show {
             transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 <body>
 
-    <!-- Topbar Navigation -->
+    <!-- Top Navigation Header -->
     <header class="topbar">
         <div class="topbar-left">
             <a href="https://tareq0001.github.io/" class="brand-pill" title="Return to Portfolio">
                 <i class="fa-solid fa-shapes"></i> APEX.VECTOR
             </a>
-            <div class="file-info">
-                <span>/</span>
-                <span class="file-name">Spatial Autonomous Design System v4.2</span>
-                <span class="zoom-badge" id="zoom-indicator">100%</span>
+
+            <!-- AI Generative Prompt Button -->
+            <div class="ai-prompt-bar" id="btn-open-ai" title="Generate UI Components with Autonomous AI">
+                <i class="fa-solid fa-wand-magic-sparkles ai-sparkle"></i>
+                <span>Ask Apex AI to generate UI...</span>
+                <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">⌘K</span>
             </div>
         </div>
 
-        <!-- Central Tools -->
-        <div class="tool-group">
-            <button class="tool-btn active" id="tool-select" title="Select / Move (V)">
+        <!-- Center Interactive Toolbar -->
+        <div class="center-tools">
+            <button class="tool-btn active" id="tool-select" title="Select / Move">
                 <i class="fa-solid fa-arrow-pointer"></i>
-                <span class="shortcut-hint">V</span>
+                <span class="kbd">V</span>
             </button>
-            <button class="tool-btn" id="tool-frame" title="Artboard Frame (F)">
+            <button class="tool-btn" id="tool-frame" title="Artboard Frame">
                 <i class="fa-regular fa-square"></i>
-                <span class="shortcut-hint">F</span>
+                <span class="kbd">F</span>
             </button>
-            <button class="tool-btn" id="tool-rect" title="Rectangle (R)">
+            <button class="tool-btn" id="tool-rect" title="Rectangle">
                 <i class="fa-solid fa-vector-square"></i>
-                <span class="shortcut-hint">R</span>
+                <span class="kbd">R</span>
             </button>
-            <button class="tool-btn" id="tool-circle" title="Ellipse (O)">
+            <button class="tool-btn" id="tool-circle" title="Ellipse">
                 <i class="fa-regular fa-circle"></i>
-                <span class="shortcut-hint">O</span>
+                <span class="kbd">O</span>
             </button>
-            <button class="tool-btn" id="tool-pen" title="Bezier Pen Tool (P)">
+            <button class="tool-btn" id="tool-pen" title="Bezier Pen Tool">
                 <i class="fa-solid fa-bezier-curve"></i>
-                <span class="shortcut-hint">P</span>
+                <span class="kbd">P</span>
             </button>
-            <button class="tool-btn" id="tool-text" title="Text (T)">
+            <button class="tool-btn" id="tool-text" title="Text Layer">
                 <i class="fa-solid fa-t"></i>
-                <span class="shortcut-hint">T</span>
+                <span class="kbd">T</span>
             </button>
-            <button class="tool-btn" id="tool-hand" title="Hand Pan (H)">
+            <button class="tool-btn" id="tool-hand" title="Hand Pan Tool">
                 <i class="fa-regular fa-hand"></i>
-                <span class="shortcut-hint">H</span>
+                <span class="kbd">H</span>
+            </button>
+
+            <div class="tool-sep"></div>
+
+            <!-- THE SPATIAL 3D REVOLUTION BUTTON -->
+            <button class="spatial-toggle-btn" id="btn-toggle-3d" title="Switch between 2D Canvas and 3D Exploded Layer Spatial View">
+                <i class="fa-solid fa-cube"></i> <span id="spatial-btn-text">3D Spatial View</span>
             </button>
         </div>
 
-        <!-- Right Options -->
+        <!-- Right Multiplayer & Actions -->
         <div class="topbar-right">
-            <div class="multiplayer-stack" title="Autonomous Collaborators Active">
-                <div class="avatar-bubble av-tareq" title="You (Tareq - Architect)">T</div>
-                <div class="avatar-bubble av-sarah" title="Sarah (Product Designer)">S</div>
-                <div class="avatar-bubble av-kenji" title="Kenji (Design Lead)">K</div>
-                <div class="avatar-bubble av-alex" title="Alex (Frontend Dev)">A</div>
+            <div class="multiplayer-avatars" title="Simulated Autonomous Collaborators Active">
+                <div class="m-avatar av-tareq" title="Tareq Aboushi [Chief AI Architect]">T</div>
+                <div class="m-avatar av-sarah" title="Sarah [Principal Designer]">S</div>
+                <div class="m-avatar av-kenji" title="Kenji [Design Systems Lead]">K</div>
+                <div class="m-avatar av-alex" title="Alex [Staff Frontend Engineer]">A</div>
             </div>
 
-            <button class="btn-action btn-ghost" id="btn-export-svg">
-                <i class="fa-solid fa-download"></i> Export SVG
+            <button class="btn-ui btn-ui-ghost" id="btn-export-svg">
+                <i class="fa-solid fa-download"></i> SVG
             </button>
-            <button class="btn-action btn-primary" id="btn-present">
+            <button class="btn-ui btn-ui-primary" id="btn-play-proto">
                 <i class="fa-solid fa-play"></i> Present
             </button>
         </div>
     </header>
 
-    <!-- Workspace -->
+    <!-- Main Workspace -->
     <main class="workspace">
         
-        <!-- Left Layers Tree -->
-        <aside class="sidebar-left">
-            <div class="sidebar-tabs">
-                <div class="sidebar-tab active" id="tab-layers">Layers</div>
-                <div class="sidebar-tab" id="tab-assets">Assets & Tokens</div>
+        <!-- Left Layers Tree & Assets -->
+        <aside class="panel-left">
+            <div class="panel-tabs">
+                <div class="panel-tab active" id="tab-layers">Layers Hierarchy</div>
+                <div class="panel-tab" id="tab-tokens">Tokens & Tokens</div>
             </div>
 
-            <div class="layers-tree" id="layers-list">
-                <!-- Dynamically populated layers -->
+            <div class="tree-container" id="layers-tree">
+                <!-- Dynamically updated layers -->
             </div>
         </aside>
 
-        <!-- Main Infinite Canvas -->
+        <!-- Center Infinite Canvas & 3D Stage -->
         <section class="canvas-viewport" id="canvas-viewport">
-            <div class="canvas-world" id="canvas-world">
+            <div class="canvas-stage" id="canvas-stage">
 
-                <!-- Artboard 1: SaaS Financial Card -->
-                <div class="artboard-frame" id="ab-saas" style="left: 120px; top: 100px; width: 420px; height: 520px;">
-                    <div class="artboard-title">
-                        <i class="fa-solid fa-layer-group"></i> SaaS Financial Card #1
+                <!-- Artboard 1: SaaS Financial Super-Card -->
+                <div class="artboard-card" id="ab-fintech" style="left: 140px; top: 100px; width: 440px; height: 560px;">
+                    <div class="artboard-header">
+                        <i class="fa-solid fa-cubes"></i> SaaS Financial Super-Card #1
                     </div>
                     
-                    <div class="resize-handle rh-nw"></div>
-                    <div class="resize-handle rh-ne"></div>
-                    <div class="resize-handle rh-sw"></div>
-                    <div class="resize-handle rh-se"></div>
+                    <div class="handle-point hp-nw"></div>
+                    <div class="handle-point hp-ne"></div>
+                    <div class="handle-point hp-sw"></div>
+                    <div class="handle-point hp-se"></div>
 
-                    <!-- Inner Mockup Elements -->
-                    <div class="element-box" id="el-card-bg" style="left: 20px; top: 20px; width: 380px; height: 480px; background: linear-gradient(135deg, rgba(26,29,42,0.95), rgba(16,18,26,0.95)); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); padding: 24px;">
+                    <!-- Inner Mockup Elements with 3D Elevation Tiers -->
+                    <div class="node-box elevate-l1" id="el-bg-glass" style="left: 20px; top: 20px; width: 400px; height: 520px; background: linear-gradient(135deg, rgba(20,24,38,0.92), rgba(12,14,24,0.92)); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); padding: 24px;">
                         
-                        <div class="element-box" id="el-badge" style="left: 24px; top: 24px; background: rgba(0,240,255,0.15); border: 1px solid rgba(0,240,255,0.3); border-radius: 20px; padding: 4px 12px; color: #00f0ff; font-size: 11px; font-weight: 700;">
-                            FINTECH ENGINE
+                        <!-- Badge -->
+                        <div class="node-box elevate-l2" id="el-tag" style="left: 24px; top: 24px; background: rgba(0,240,255,0.15); border: 1px solid rgba(0,240,255,0.3); border-radius: 20px; padding: 4px 14px; color: #00f0ff; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-bolt"></i> QUANTUM ARBITRAGE
                         </div>
 
-                        <div class="element-box" id="el-balance-title" style="left: 24px; top: 64px; color: #94a3b8; font-size: 12px; font-weight: 500;">
-                            PORTFOLIO ASSETS
+                        <!-- Balance -->
+                        <div class="node-box elevate-l2" id="el-bal-lbl" style="left: 24px; top: 68px; color: #94a3b8; font-size: 12px; font-weight: 600;">
+                            TOTAL SYSTEM VALUE (USD)
                         </div>
 
-                        <div class="element-box" id="el-balance-val" style="left: 24px; top: 86px; color: #ffffff; font-size: 32px; font-weight: 800; font-family: 'Syne', sans-serif;">
-                            $4,892,120.40
+                        <div class="node-box elevate-l3" id="el-bal-val" style="left: 24px; top: 92px; color: #ffffff; font-size: 36px; font-weight: 900; font-family: 'Syne', sans-serif;">
+                            $9,482,750.80
                         </div>
 
-                        <div class="element-box" id="el-delta" style="left: 24px; top: 132px; color: #10b981; font-size: 13px; font-weight: 700;">
-                            <i class="fa-solid fa-arrow-trend-up"></i> +18.4% (+$612,400)
+                        <div class="node-box elevate-l2" id="el-bal-delta" style="left: 24px; top: 142px; color: #10b981; font-size: 13px; font-weight: 700;">
+                            <i class="fa-solid fa-arrow-trend-up"></i> +24.8% APY (+$1,890,200)
                         </div>
 
-                        <!-- Sparkline SVG -->
-                        <div class="element-box" id="el-sparkline" style="left: 24px; top: 170px; width: 332px; height: 120px;">
-                            <svg width="332" height="120" viewBox="0 0 332 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M0 90 Q 50 110, 90 60 T 170 40 T 250 80 T 332 10" stroke="#00f0ff" stroke-width="3" fill="none"/>
-                                <path d="M0 90 Q 50 110, 90 60 T 170 40 T 250 80 T 332 10 L 332 120 L 0 120 Z" fill="url(#spark-grad)" opacity="0.3"/>
+                        <!-- Animated SVG Sparkline Chart -->
+                        <div class="node-box elevate-l2" id="el-chart" style="left: 24px; top: 180px; width: 352px; height: 140px;">
+                            <svg width="352" height="140" viewBox="0 0 352 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 100 Q 60 130, 110 70 T 210 40 T 280 80 T 352 20" stroke="#00f0ff" stroke-width="3" fill="none"/>
+                                <path d="M0 100 Q 60 130, 110 70 T 210 40 T 280 80 T 352 20 L 352 140 L 0 140 Z" fill="url(#grad-fin)" opacity="0.25"/>
                                 <defs>
-                                    <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+                                    <linearGradient id="grad-fin" x1="0" y1="0" x2="0" y2="140" gradientUnits="userSpaceOnUse">
                                         <stop stop-color="#00f0ff" stop-opacity="0.8"/>
                                         <stop offset="1" stop-color="#00f0ff" stop-opacity="0"/>
                                     </linearGradient>
@@ -908,205 +902,185 @@
                             </svg>
                         </div>
 
-                        <!-- Action Button -->
-                        <div class="element-box" id="el-cta-btn" style="left: 24px; top: 380px; width: 332px; height: 48px; background: linear-gradient(135deg, #0d99ff, #00f0ff); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 14px; box-shadow: 0 8px 24px rgba(0,240,255,0.35);">
-                            EXECUTE REBALANCE
+                        <!-- Interactive Mini Toggle Row -->
+                        <div class="node-box elevate-l2" id="el-toggle-row" style="left: 24px; top: 340px; width: 352px; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 16px; border-radius: 12px;">
+                            <span style="font-size: 12px; font-weight: 600; color: #cbd5e1;">High-Frequency Auto-Rebalance</span>
+                            <div style="width: 38px; height: 22px; background: #00f0ff; border-radius: 12px; position: relative; cursor: pointer;">
+                                <div style="position: absolute; right: 2px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: #000;"></div>
+                            </div>
+                        </div>
+
+                        <!-- CTA Button -->
+                        <div class="node-box elevate-l3" id="el-cta-btn" style="left: 24px; top: 420px; width: 352px; height: 52px; background: linear-gradient(135deg, #0d99ff, #00f0ff); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 15px; box-shadow: 0 10px 25px rgba(0,240,255,0.4); cursor: pointer;">
+                            DEPLOY TO MAINNET
                         </div>
 
                     </div>
                 </div>
 
-                <!-- Artboard 2: iOS Spatial Mobile App Screen -->
-                <div class="artboard-frame" id="ab-mobile" style="left: 620px; top: 100px; width: 375px; height: 680px; border-radius: 40px;">
-                    <div class="artboard-title">
-                        <i class="fa-solid fa-mobile-screen"></i> iOS Spatial Client Screen
+                <!-- Artboard 2: iOS 18 Spatial Client -->
+                <div class="artboard-card" id="ab-mobile-ios" style="left: 680px; top: 100px; width: 380px; height: 720px; border-radius: 46px;">
+                    <div class="artboard-header">
+                        <i class="fa-solid fa-mobile-screen"></i> iOS 18 Spatial Client
                     </div>
 
-                    <div class="resize-handle rh-nw"></div>
-                    <div class="resize-handle rh-ne"></div>
-                    <div class="resize-handle rh-sw"></div>
-                    <div class="resize-handle rh-se"></div>
+                    <div class="handle-point hp-nw"></div>
+                    <div class="handle-point hp-ne"></div>
+                    <div class="handle-point hp-sw"></div>
+                    <div class="handle-point hp-se"></div>
 
                     <!-- Dynamic Island Notch -->
-                    <div class="element-box" style="left: 132px; top: 12px; width: 110px; height: 26px; background: #000; border-radius: 18px; display: flex; align-items: center; justify-content: center;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; margin-right: 6px;"></div>
-                        <span style="font-size: 9px; color: #fff; font-weight: 600;">ACTIVE</span>
+                    <div class="node-box elevate-l3" style="left: 130px; top: 14px; width: 120px; height: 30px; background: #000; border-radius: 20px; display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #00f0ff;"></div>
+                        <span style="font-size: 9px; color: #fff; font-weight: 700; font-family: var(--font-mono);">LIVE NODE</span>
                     </div>
 
-                    <!-- Header Profile -->
-                    <div class="element-box" style="left: 24px; top: 60px; display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #9d4edd, #00f0ff); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff;">TA</div>
+                    <!-- Profile Header -->
+                    <div class="node-box elevate-l2" style="left: 24px; top: 68px; display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #00f0ff); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; color: #fff; box-shadow: 0 4px 14px rgba(168,85,247,0.4);">TA</div>
                         <div>
-                            <div style="font-size: 14px; font-weight: 700; color: #fff;">Tareq Aboushi</div>
-                            <div style="font-size: 11px; color: #94a3b8;">Chief AI Architect</div>
+                            <div style="font-size: 15px; font-weight: 800; color: #fff;">Tareq Aboushi</div>
+                            <div style="font-size: 11px; color: var(--accent-cyan); font-family: var(--font-mono);">CHIEF AI ARCHITECT</div>
                         </div>
                     </div>
 
-                    <!-- Floating Glass Card -->
-                    <div class="element-box" id="el-mob-card" style="left: 24px; top: 130px; width: 327px; height: 220px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; backdrop-filter: blur(16px); padding: 20px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #9d4edd; letter-spacing: 1px;">QUANTUM NODE // 09</div>
-                        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-top: 6px;">Aether Mesh Core</div>
-                        <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">Superconducting qubit state synchronized at 99.98% fidelity.</div>
+                    <!-- Spatial Hologram Card -->
+                    <div class="node-box elevate-l2" id="el-spatial-hologram" style="left: 24px; top: 140px; width: 332px; height: 260px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; backdrop-filter: blur(20px); padding: 22px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 11px; font-weight: 800; color: #a855f7; letter-spacing: 1px;">AETHER MESH // KERNEL</span>
+                            <span style="font-size: 10px; background: rgba(16,185,129,0.2); color: #10b981; padding: 2px 8px; border-radius: 10px; font-weight: 700;">99.999% UP</span>
+                        </div>
+                        <div style="font-size: 22px; font-weight: 900; color: #fff; margin-top: 10px; font-family: 'Syne', sans-serif;">Autonomous eBPF Telemetry</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-top: 8px; line-height: 1.4;">Zero-copy kernel XDP packet inspection and discrete viral cascade graph ranking.</div>
 
-                        <!-- Progress Bar -->
-                        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 24px; overflow: hidden;">
-                            <div style="width: 78%; height: 100%; background: linear-gradient(90deg, #9d4edd, #00f0ff);"></div>
+                        <div style="margin-top: 24px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 6px;">
+                                <span>Throughput</span>
+                                <span style="color: #00f0ff; font-weight: 700;">4.8 Mpps</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                <div style="width: 84%; height: 100%; background: linear-gradient(90deg, #a855f7, #00f0ff); border-radius: 4px;"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Bottom Nav Dock -->
-                    <div class="element-box" style="left: 24px; bottom: 24px; width: 327px; height: 60px; background: rgba(20,23,35,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: space-around;">
-                        <i class="fa-solid fa-house" style="color: #00f0ff; font-size: 18px;"></i>
-                        <i class="fa-solid fa-chart-pie" style="color: #64748b; font-size: 18px;"></i>
-                        <i class="fa-solid fa-shield" style="color: #64748b; font-size: 18px;"></i>
-                        <i class="fa-solid fa-gear" style="color: #64748b; font-size: 18px;"></i>
+                    <!-- Bottom Nav Pill -->
+                    <div class="node-box elevate-l3" style="left: 24px; bottom: 28px; width: 332px; height: 64px; background: rgba(18,22,34,0.92); border: 1px solid rgba(255,255,255,0.12); border-radius: 32px; display: flex; align-items: center; justify-content: space-around; box-shadow: 0 10px 30px rgba(0,0,0,0.7);">
+                        <i class="fa-solid fa-shapes" style="color: #00f0ff; font-size: 20px;"></i>
+                        <i class="fa-solid fa-chart-line" style="color: #64748b; font-size: 20px;"></i>
+                        <i class="fa-solid fa-cube" style="color: #64748b; font-size: 20px;"></i>
+                        <i class="fa-solid fa-gear" style="color: #64748b; font-size: 20px;"></i>
                     </div>
                 </div>
 
-                <!-- Simulated Collaborator Cursors -->
-                <div class="mp-cursor cursor-sarah" id="cursor-sarah" style="transform: translate3d(340px, 320px, 0);">
-                    <svg class="mp-cursor-pointer" viewBox="0 0 16 16" fill="none">
-                        <path d="M0 0 L14 5 L8 8 L5 14 Z" fill="#9d4edd" stroke="#ffffff" stroke-width="1.5"/>
+                <!-- Simulated Collaborative Cursors -->
+                <div class="collab-cursor collab-sarah" id="cursor-sarah" style="transform: translate3d(360px, 340px, 0);">
+                    <svg class="collab-pointer" viewBox="0 0 16 16" fill="none">
+                        <path d="M0 0 L15 5 L9 9 L5 15 Z" fill="#a855f7" stroke="#ffffff" stroke-width="1.5"/>
                     </svg>
-                    <div class="mp-cursor-tag">Sarah [UI Designer]</div>
-                    <div class="cursor-comment-bubble" id="bubble-sarah">
-                        "Increasing button shadow blur to 24px for better spatial depth."
+                    <div class="collab-pill">Sarah [Principal Designer]</div>
+                    <div class="collab-comment" id="bubble-sarah">
+                        "Evaluating 3D Z-elevation tokens for spatial depth."
                     </div>
                 </div>
 
-                <div class="mp-cursor cursor-alex" id="cursor-alex" style="transform: translate3d(780px, 240px, 0);">
-                    <svg class="mp-cursor-pointer" viewBox="0 0 16 16" fill="none">
-                        <path d="M0 0 L14 5 L8 8 L5 14 Z" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+                <div class="collab-cursor collab-alex" id="cursor-alex" style="transform: translate3d(820px, 260px, 0);">
+                    <svg class="collab-pointer" viewBox="0 0 16 16" fill="none">
+                        <path d="M0 0 L15 5 L9 9 L5 15 Z" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
                     </svg>
-                    <div class="mp-cursor-tag">Alex [Frontend Lead]</div>
-                    <div class="cursor-comment-bubble" id="bubble-alex" style="display: none;">
-                        "Copying generated Tailwind tokens to the repo."
+                    <div class="collab-pill">Alex [Staff Engineer]</div>
+                    <div class="collab-comment" id="bubble-alex" style="display: none;">
+                        "Copying generated SwiftUI & React code to repo."
                     </div>
                 </div>
 
             </div>
         </section>
 
-        <!-- Right Inspector Panel -->
-        <aside class="sidebar-right">
+        <!-- Right Inspector & Multi-Language DevMode -->
+        <aside class="panel-right">
             <div class="inspector-tabs">
-                <div class="inspector-tab active" id="tab-design">Design</div>
-                <div class="inspector-tab" id="tab-proto">Prototype</div>
-                <div class="inspector-tab dev-mode" id="tab-inspect">
-                    <i class="fa-solid fa-code"></i> Dev Mode
+                <div class="i-tab active" id="tab-design">Design</div>
+                <div class="i-tab" id="tab-spatial">Spatial 3D</div>
+                <div class="i-tab dev" id="tab-devmode">
+                    <i class="fa-solid fa-code"></i> DevMode
                 </div>
             </div>
 
-            <div class="inspector-body" id="inspector-content">
+            <div class="inspector-content" id="inspector-content">
                 
-                <!-- Design Tab Content -->
-                <div id="panel-design">
-                    <!-- Position & Dimensions -->
-                    <div class="prop-section">
-                        <div class="prop-title">Frame & Transform</div>
-                        <div class="prop-grid-2">
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">X</span>
-                                <input type="number" class="prop-input" id="prop-x" value="120">
-                            </div>
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">Y</span>
-                                <input type="number" class="prop-input" id="prop-y" value="100">
-                            </div>
+                <!-- Design Tab -->
+                <div id="view-design">
+                    <div class="prop-group">
+                        <div class="prop-header">Transform & Geometry</div>
+                        <div class="prop-row-2">
+                            <div class="input-box"><span class="input-lbl">X</span><input type="number" class="input-fld" id="in-x" value="140"></div>
+                            <div class="input-box"><span class="input-lbl">Y</span><input type="number" class="input-fld" id="in-y" value="100"></div>
                         </div>
-                        <div class="prop-grid-2">
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">W</span>
-                                <input type="number" class="prop-input" id="prop-w" value="420">
-                            </div>
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">H</span>
-                                <input type="number" class="prop-input" id="prop-h" value="520">
-                            </div>
+                        <div class="prop-row-2">
+                            <div class="input-box"><span class="input-lbl">W</span><input type="number" class="input-fld" id="in-w" value="440"></div>
+                            <div class="input-box"><span class="input-lbl">H</span><input type="number" class="input-fld" id="in-h" value="560"></div>
                         </div>
-                        <div class="prop-grid-2">
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">R</span>
-                                <input type="number" class="prop-input" id="prop-radius" value="20">
-                            </div>
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">∡</span>
-                                <input type="number" class="prop-input" id="prop-rot" value="0">
-                            </div>
+                        <div class="prop-row-2">
+                            <div class="input-box"><span class="input-lbl">R</span><input type="number" class="input-fld" id="in-r" value="20"></div>
+                            <div class="input-box"><span class="input-lbl">∡</span><input type="number" class="input-fld" id="in-rot" value="0"></div>
                         </div>
                     </div>
 
-                    <!-- Auto-Layout Flexbox -->
-                    <div class="prop-section">
-                        <div class="prop-title">Auto-Layout Engine</div>
-                        <div class="btn-flex-row" style="margin-bottom: 8px;">
-                            <button class="btn-flex-opt active" id="flex-col">Vertical ↓</button>
-                            <button class="btn-flex-opt" id="flex-row">Horizontal →</button>
-                            <button class="btn-flex-opt" id="flex-wrap">Wrap ↵</button>
-                        </div>
-                        <div class="prop-grid-2">
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">Pad</span>
-                                <input type="number" class="prop-input" id="prop-pad" value="24">
-                            </div>
-                            <div class="prop-input-wrap">
-                                <span class="prop-label">Gap</span>
-                                <input type="number" class="prop-input" id="prop-gap" value="16">
-                            </div>
+                    <div class="prop-group">
+                        <div class="prop-header">Spatial Depth (Z-Elevation)</div>
+                        <div class="input-box" style="margin-bottom: 8px;">
+                            <span style="font-size: 0.72rem; color: var(--text-muted); width: 60px;">Z-Depth:</span>
+                            <input type="range" min="0" max="200" value="40" id="slider-z" style="flex:1; accent-color: var(--accent-cyan);">
+                            <span id="lbl-z" style="font-family: var(--font-mono); font-size: 0.75rem; width: 40px; text-align: right;">40px</span>
                         </div>
                     </div>
 
-                    <!-- Fill Color & Glass -->
-                    <div class="prop-section">
-                        <div class="prop-title">Appearance & Fill</div>
-                        <div class="color-row">
-                            <div class="color-swatch" id="swatch-fill" style="background: #00f0ff;"></div>
-                            <input type="text" class="color-hex" id="hex-fill" value="#00f0ff">
-                            <input type="number" class="prop-input" id="opacity-fill" value="100" style="width: 45px;">%
-                        </div>
-                    </div>
-
-                    <!-- Effects / Glow -->
-                    <div class="prop-section">
-                        <div class="prop-title">Spatial Effects</div>
-                        <div class="prop-input-wrap" style="margin-bottom: 8px;">
-                            <span style="font-size: 0.72rem; color: var(--text-muted);">Backdrop Blur:</span>
-                            <input type="range" min="0" max="40" value="16" id="blur-slider" style="flex:1; accent-color: var(--accent-cyan);">
+                    <div class="prop-group">
+                        <div class="prop-header">Appearance & Color</div>
+                        <div class="input-box">
+                            <div style="width: 20px; height: 20px; border-radius: 4px; background: #00f0ff; border: 1px solid #fff;"></div>
+                            <input type="text" class="input-fld" id="in-color" value="#00f0ff">
                         </div>
                     </div>
                 </div>
 
-                <!-- Dev Mode Content (Hidden by default) -->
-                <div id="panel-inspect" style="display: none;">
-                    <div class="prop-section">
-                        <div class="code-header">
-                            <span class="prop-title" style="margin-bottom:0;">Tailwind CSS Classes</span>
-                            <button class="btn-copy" onclick="copyCode('code-tw')">Copy</button>
+                <!-- Spatial 3D Controls -->
+                <div id="view-spatial" style="display: none;">
+                    <div class="prop-group">
+                        <div class="prop-header">Camera & Orbit</div>
+                        <div class="input-box" style="margin-bottom: 8px;">
+                            <span style="font-size: 0.72rem; color: var(--text-muted); width: 65px;">Tilt (X):</span>
+                            <input type="range" min="0" max="85" value="55" id="cam-tilt" style="flex:1; accent-color: var(--accent-purple);">
                         </div>
-                        <div class="code-box" id="code-tw">p-6 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl shadow-cyan-500/20</div>
+                        <div class="input-box" style="margin-bottom: 8px;">
+                            <span style="font-size: 0.72rem; color: var(--text-muted); width: 65px;">Rotate (Z):</span>
+                            <input type="range" min="-180" max="180" value="-35" id="cam-rot" style="flex:1; accent-color: var(--accent-purple);">
+                        </div>
+                        <div class="input-box">
+                            <span style="font-size: 0.72rem; color: var(--text-muted); width: 65px;">Layer Gap:</span>
+                            <input type="range" min="10" max="150" value="60" id="cam-gap" style="flex:1; accent-color: var(--accent-cyan);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DevMode Multi-Target Compiler -->
+                <div id="view-devmode" style="display: none;">
+                    <div class="code-lang-tabs">
+                        <button class="code-lang-btn active" onclick="switchLang('tw')">Tailwind v4</button>
+                        <button class="code-lang-btn" onclick="switchLang('css')">CSS3</button>
+                        <button class="code-lang-btn" onclick="switchLang('react')">React JSX</button>
+                        <button class="code-lang-btn" onclick="switchLang('swift')">SwiftUI</button>
                     </div>
 
-                    <div class="prop-section">
-                        <div class="code-header">
-                            <span class="prop-title" style="margin-bottom:0;">Native CSS3 Styles</span>
-                            <button class="btn-copy" onclick="copyCode('code-css')">Copy</button>
-                        </div>
-                        <div class="code-box" id="code-css">background: rgba(16, 18, 26, 0.95);
-border: 1px solid rgba(255, 255, 255, 0.1);
-border-radius: 20px;
-backdrop-filter: blur(16px);
-box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);</div>
+                    <div class="prop-header" style="margin-top: 10px;">
+                        <span>Compiled Code</span>
+                        <button class="btn-ui btn-ui-ghost" style="padding: 2px 8px; font-size: 0.68rem;" onclick="copyCode()">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
                     </div>
 
-                    <div class="prop-section">
-                        <div class="code-header">
-                            <span class="prop-title" style="margin-bottom:0;">React JSX Component</span>
-                            <button class="btn-copy" onclick="copyCode('code-jsx')">Copy</button>
-                        </div>
-                        <div class="code-box" id="code-jsx">&lt;div className="relative p-6 rounded-2xl bg-[#10121a]/95 backdrop-blur-lg border border-white/10 shadow-2xl"&gt;
-  &lt;ApexFinancialCard balance={4892120.40} delta="+18.4%" /&gt;
-&lt;/div&gt;</div>
-                    </div>
+                    <div class="code-snippet-box" id="code-output"></div>
                 </div>
 
             </div>
@@ -1114,36 +1088,43 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);</div>
 
     </main>
 
-    <!-- Presentation Modal (Figma Present / Play) -->
-    <div class="present-modal" id="present-modal">
-        <div class="present-toolbar">
-            <span style="font-size: 0.8rem; font-weight: 700; color: #fff;">
-                <i class="fa-solid fa-play" style="color: #10b981; margin-right: 6px;"></i> Live Prototype Preview
-            </span>
-            <button class="btn-action btn-ghost" id="btn-close-present">
-                <i class="fa-solid fa-xmark"></i> Close Preview
-            </button>
-        </div>
-
-        <div class="phone-mockup">
-            <div class="dynamic-island">
-                <div style="width: 8px; height: 8px; border-radius: 50%; background: #00f0ff;"></div>
-                <span style="font-size: 9px; color: #fff; font-weight: 700;">PROTOTYPE</span>
+    <!-- AI Prompt-to-UI Modal -->
+    <div class="ai-modal" id="ai-modal">
+        <div class="ai-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-family: 'Syne', sans-serif; font-size: 1.2rem; color: #fff;">
+                    <i class="fa-solid fa-wand-magic-sparkles ai-sparkle"></i> Apex AI Prompt-to-UI Engine
+                </h3>
+                <i class="fa-solid fa-xmark" id="btn-close-ai" style="cursor: pointer; color: var(--text-muted); font-size: 1.2rem;"></i>
             </div>
-            <iframe id="present-iframe" style="width: 100%; height: 100%; border: none; background: #0b0d14;" srcdoc="
-                <body style='margin:0; padding:24px; font-family:sans-serif; color:#fff; background:#0d0f17; display:flex; flex-direction:column; justify-content:center; align-items:center; height:90vh; text-align:center;'>
-                    <h2 style='font-size:24px; margin-bottom:12px; color:#00f0ff;'>ApexVector Interactive Screen</h2>
-                    <p style='color:#94a3b8; font-size:14px; max-width:280px; line-height:1.5;'>Interactive touch prototype running at 60 FPS with micro-interactions and smart animate.</p>
-                    <button style='margin-top:24px; padding:14px 28px; border-radius:12px; background:linear-gradient(135deg,#0d99ff,#00f0ff); border:none; color:#000; font-weight:800; cursor:pointer;' onclick='alert(\'Prototype Micro-interaction Verified!\')'>TAP TO TEST</button>
-                </body>
-            "></iframe>
+
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
+                Type a natural language description to synthesize pixel-perfect, fully responsive spatial components directly onto your canvas:
+            </p>
+
+            <div style="position: relative; margin-bottom: 16px;">
+                <input type="text" id="ai-prompt-input" placeholder="e.g. Generate a Cyberpunk Crypto Wallet with Live Sparkline..." style="width: 100%; background: #0a0b12; border: 1px solid rgba(168,85,247,0.4); border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 0.88rem; outline: none;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Preset Templates:</span>
+                <div style="margin-top: 6px;">
+                    <span class="ai-preset-chip" onclick="generatePreset('crypto')">🚀 Cyberpunk Crypto Card</span>
+                    <span class="ai-preset-chip" onclick="generatePreset('scada')">⚡ Industrial SCADA Gauges</span>
+                    <span class="ai-preset-chip" onclick="generatePreset('audio')">🎧 Spatial Audio HUD</span>
+                </div>
+            </div>
+
+            <button class="btn-ui btn-ui-primary" id="btn-run-ai" style="width: 100%; justify-content: center; padding: 12px; font-size: 0.9rem;">
+                <i class="fa-solid fa-bolt"></i> Generate Spatial Component
+            </button>
         </div>
     </div>
 
     <!-- Toast Notification -->
-    <div class="toast" id="toast">Copied to clipboard!</div>
+    <div class="toast-msg" id="toast">Copied to clipboard!</div>
 
-    <!-- Interactive Script -->
+    <!-- Master Interactive Script -->
     <script>
         // State
         const state = {
@@ -1157,65 +1138,109 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);</div>
             selectedElement: null,
             draggedElement: null,
             elemStartX: 0,
-            elemStartY: 0
+            elemStartY: 0,
+            isSpatial3D: false,
+            tiltX: 55,
+            rotZ: -35,
+            layerGap: 60,
+            currentLang: 'tw'
         };
 
         const canvasViewport = document.getElementById('canvas-viewport');
-        const canvasWorld = document.getElementById('canvas-world');
-        const zoomIndicator = document.getElementById('zoom-indicator');
+        const canvasStage = document.getElementById('canvas-stage');
         const toast = document.getElementById('toast');
+        const spatialBtn = document.getElementById('btn-toggle-3d');
+        const spatialBtnText = document.getElementById('spatial-btn-text');
 
-        // Apply zoom and pan transformation
-        function updateTransform() {
-            canvasWorld.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
-            zoomIndicator.textContent = `${Math.round(state.zoom * 100)}%`;
+        // Audio synthesizer for tactile clicks
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBlip(freq = 600, type = 'sine', duration = 0.04) {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
         }
 
-        // Mouse Wheel: Zoom
+        // Apply 2D or 3D transform
+        function updateTransform() {
+            if (state.isSpatial3D) {
+                canvasStage.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom}) rotateX(${state.tiltX}deg) rotateZ(${state.rotZ}deg)`;
+            } else {
+                canvasStage.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            }
+        }
+
+        // 3D Spatial Toggle
+        spatialBtn.addEventListener('click', () => {
+            playBlip(750, 'triangle', 0.1);
+            state.isSpatial3D = !state.isSpatial3D;
+            if (state.isSpatial3D) {
+                canvasViewport.classList.add('spatial-3d-active');
+                spatialBtn.classList.add('active');
+                spatialBtnText.textContent = "Exit 3D View";
+                showToast("3D Spatial Exploded View Activated");
+            } else {
+                canvasViewport.classList.remove('spatial-3d-active');
+                spatialBtn.classList.remove('active');
+                spatialBtnText.textContent = "3D Spatial View";
+                showToast("2D Canvas Restored");
+            }
+            updateTransform();
+        });
+
+        // Mouse Wheel Zoom
         canvasViewport.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-            const newZoom = Math.min(Math.max(state.zoom * zoomFactor, 0.2), 4.0);
+            const factor = e.deltaY < 0 ? 1.08 : 0.92;
+            const newZoom = Math.min(Math.max(state.zoom * factor, 0.25), 3.5);
 
-            // Zoom centered on cursor
             const rect = canvasViewport.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
 
-            state.panX = mouseX - (mouseX - state.panX) * (newZoom / state.zoom);
-            state.panY = mouseY - (mouseY - state.panY) * (newZoom / state.zoom);
+            state.panX = mx - (mx - state.panX) * (newZoom / state.zoom);
+            state.panY = my - (my - state.panY) * (newZoom / state.zoom);
             state.zoom = newZoom;
 
             updateTransform();
         }, { passive: false });
 
-        // Pan with Space / Middle Click / Hand tool
-        let isSpacePressed = false;
+        // Pan with Space or Middle Click
+        let isSpace = false;
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !isSpacePressed) {
-                isSpacePressed = true;
+            if (e.code === 'Space' && !isSpace) {
+                isSpace = true;
                 canvasViewport.classList.add('panning');
             }
             if (e.key === 'v' || e.key === 'V') setTool('select');
-            if (e.key === 'f' || e.key === 'F') setTool('frame');
             if (e.key === 'r' || e.key === 'R') setTool('rect');
             if (e.key === 'o' || e.key === 'O') setTool('circle');
-            if (e.key === 'p' || e.key === 'P') setTool('pen');
-            if (e.key === 't' || e.key === 'T') setTool('text');
+            if (e.key === 'f' || e.key === 'F') setTool('frame');
             if (e.key === 'h' || e.key === 'H') setTool('hand');
+            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                document.getElementById('ai-modal').classList.add('open');
+            }
         });
 
         window.addEventListener('keyup', (e) => {
             if (e.code === 'Space') {
-                isSpacePressed = false;
-                if (state.activeTool !== 'hand') {
-                    canvasViewport.classList.remove('panning');
-                }
+                isSpace = false;
+                if (state.activeTool !== 'hand') canvasViewport.classList.remove('panning');
             }
         });
 
         canvasViewport.addEventListener('mousedown', (e) => {
-            if (e.button === 1 || isSpacePressed || state.activeTool === 'hand') {
+            if (e.button === 1 || isSpace || state.activeTool === 'hand') {
                 state.isPanning = true;
                 state.startX = e.clientX - state.panX;
                 state.startY = e.clientY - state.panY;
@@ -1223,8 +1248,9 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);</div>
                 return;
             }
 
-            // Element creation tools
-            if (state.activeTool === 'rect' || state.activeTool === 'circle' || state.activeTool === 'frame') {
+            // Creating new shapes
+            if (['rect', 'circle', 'frame'].includes(state.activeTool)) {
+                playBlip(520, 'sine', 0.05);
                 const rect = canvasViewport.getBoundingClientRect();
                 const worldX = (e.clientX - rect.left - state.panX) / state.zoom;
                 const worldY = (e.clientY - rect.top - state.panY) / state.zoom;
@@ -1241,19 +1267,17 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);</div>
                 return;
             }
 
-            // Dragging selected element
             if (state.draggedElement) {
                 const dx = (e.clientX - state.elemStartX) / state.zoom;
                 const dy = (e.clientY - state.elemStartY) / state.zoom;
-                
-                const curLeft = parseFloat(state.draggedElement.style.left) || 0;
-                const curTop = parseFloat(state.draggedElement.style.top) || 0;
+                const curL = parseFloat(state.draggedElement.style.left) || 0;
+                const curT = parseFloat(state.draggedElement.style.top) || 0;
 
-                state.draggedElement.style.left = `${Math.round(curLeft + dx)}px`;
-                state.draggedElement.style.top = `${Math.round(curTop + dy)}px`;
+                state.draggedElement.style.left = `${Math.round(curL + dx)}px`;
+                state.draggedElement.style.top = `${Math.round(curT + dy)}px`;
 
-                document.getElementById('prop-x').value = Math.round(curLeft + dx);
-                document.getElementById('prop-y').value = Math.round(curTop + dy);
+                document.getElementById('in-x').value = Math.round(curL + dx);
+                document.getElementById('in-y').value = Math.round(curT + dy);
 
                 state.elemStartX = e.clientX;
                 state.elemStartY = e.clientY;
@@ -1263,69 +1287,118 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);</div>
         window.addEventListener('mouseup', () => {
             state.isPanning = false;
             state.draggedElement = null;
-            if (!isSpacePressed && state.activeTool !== 'hand') {
-                canvasViewport.classList.remove('panning');
-            }
+            if (!isSpace && state.activeTool !== 'hand') canvasViewport.classList.remove('panning');
         });
 
-        // Tool Selection
-        function setTool(toolName) {
-            state.activeTool = toolName;
-            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-            const btn = document.getElementById(`tool-${toolName}`);
-            if (btn) btn.classList.add('active');
-
-            if (toolName === 'hand') {
-                canvasViewport.classList.add('panning');
-            } else if (!isSpacePressed) {
-                canvasViewport.classList.remove('panning');
-            }
+        // Tool Switching
+        function setTool(tool) {
+            playBlip(440);
+            state.activeTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            const b = document.getElementById(`tool-${tool}`);
+            if (b) b.classList.add('active');
+            if (tool === 'hand') canvasViewport.classList.add('panning');
+            else if (!isSpace) canvasViewport.classList.remove('panning');
         }
 
         ['select', 'frame', 'rect', 'circle', 'pen', 'text', 'hand'].forEach(t => {
-            const b = document.getElementById(`tool-${t}`);
-            if (b) b.addEventListener('click', () => setTool(t));
+            const el = document.getElementById(`tool-${t}`);
+            if (el) el.addEventListener('click', () => setTool(t));
         });
 
-        // Select Element
+        // Element Selection
         function selectElement(el) {
-            if (state.selectedElement) {
-                state.selectedElement.classList.remove('selected');
-            }
+            playBlip(880, 'sine', 0.03);
+            if (state.selectedElement) state.selectedElement.classList.remove('selected');
             state.selectedElement = el;
             if (el) {
                 el.classList.add('selected');
-                updateInspectorValues(el);
+                updateInspector(el);
             }
-            updateLayersSelection();
+            rebuildTree();
         }
 
-        function updateInspectorValues(el) {
+        function updateInspector(el) {
             const x = Math.round(parseFloat(el.style.left) || 0);
             const y = Math.round(parseFloat(el.style.top) || 0);
             const w = Math.round(parseFloat(el.style.width) || el.offsetWidth);
             const h = Math.round(parseFloat(el.style.height) || el.offsetHeight);
             const r = Math.round(parseFloat(el.style.borderRadius) || 0);
 
-            document.getElementById('prop-x').value = x;
-            document.getElementById('prop-y').value = y;
-            document.getElementById('prop-w').value = w;
-            document.getElementById('prop-h').value = h;
-            document.getElementById('prop-radius').value = r;
+            document.getElementById('in-x').value = x;
+            document.getElementById('in-y').value = y;
+            document.getElementById('in-w').value = w;
+            document.getElementById('in-h').value = h;
+            document.getElementById('in-r').value = r;
 
-            // Update code view
-            const bg = el.style.background || 'rgba(16, 18, 26, 0.95)';
-            const border = el.style.border || '1px solid rgba(255, 255, 255, 0.1)';
-            document.getElementById('code-css').textContent = 
-`width: ${w}px;
-height: ${h}px;
-background: ${bg};
-border-radius: ${r}px;
-border: ${border};`;
+            updateCodeOutput(w, h, r);
         }
 
-        // Click handlers on artboards & elements
-        document.querySelectorAll('.artboard-frame, .element-box').forEach(el => {
+        function updateCodeOutput(w, h, r) {
+            const lang = state.currentLang;
+            let code = '';
+            if (lang === 'tw') {
+                code = `<!-- Tailwind CSS v4 Component -->
+<div className="w-[${w}px] h-[${h}px] rounded-[${r}px] 
+  bg-slate-900/90 backdrop-blur-xl border border-cyan-500/20 
+  shadow-2xl shadow-cyan-500/10 p-6 flex flex-col gap-4">
+  <span className="text-xs font-mono font-bold text-cyan-400">APEX.SPATIAL</span>
+</div>`;
+            } else if (lang === 'css') {
+                code = `/* Native CSS3 Glassmorphism */
+.apex-spatial-node {
+  width: ${w}px;
+  height: ${h}px;
+  border-radius: ${r}px;
+  background: rgba(17, 20, 32, 0.95);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}`;
+            } else if (lang === 'react') {
+                code = `import React from 'react';
+
+export const ApexSpatialCard: React.FC = () => {
+  return (
+    <div style={{ width: ${w}, height: ${h}, borderRadius: ${r} }}
+         className="relative p-6 bg-[#111420]/95 backdrop-blur-2xl border border-cyan-400/20 shadow-2xl">
+      <h3 className="text-white font-extrabold text-xl">Spatial Node</h3>
+    </div>
+  );
+};`;
+            } else if (lang === 'swift') {
+                code = `import SwiftUI
+
+struct ApexSpatialView: View {
+    var body: some View {
+        VStack {
+            Text("Spatial Node")
+                .font(.headline)
+                .foregroundColor(.cyan)
+        }
+        .frame(width: ${w}, height: ${h})
+        .background(.ultraThinMaterial)
+        .cornerRadius(${r})
+        .overlay(RoundedRectangle(cornerRadius: ${r}).stroke(Color.cyan.opacity(0.3), lineWidth: 1))
+    }
+}`;
+            }
+            document.getElementById('code-output').textContent = code;
+        }
+
+        window.switchLang = function(lang) {
+            playBlip(600);
+            state.currentLang = lang;
+            document.querySelectorAll('.code-lang-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            const w = document.getElementById('in-w').value || 440;
+            const h = document.getElementById('in-h').value || 560;
+            const r = document.getElementById('in-r').value || 20;
+            updateCodeOutput(w, h, r);
+        };
+
+        // Click on elements
+        document.querySelectorAll('.artboard-card, .node-box').forEach(el => {
             el.addEventListener('mousedown', (e) => {
                 if (state.activeTool === 'select') {
                     e.stopPropagation();
@@ -1337,38 +1410,38 @@ border: ${border};`;
             });
         });
 
-        // Create new shape dynamically
-        let shapeCount = 1;
+        // Dynamic Shape Creator
+        let shpId = 1;
         function createShape(type, x, y) {
             const el = document.createElement('div');
-            el.className = 'artboard-frame';
-            el.id = `custom-${type}-${shapeCount++}`;
+            el.className = 'artboard-card';
+            el.id = `node-${type}-${shpId++}`;
             el.style.left = `${Math.round(x)}px`;
             el.style.top = `${Math.round(y)}px`;
 
             if (type === 'rect') {
-                el.style.width = '200px';
-                el.style.height = '140px';
-                el.style.background = '#1e2330';
-                el.style.borderRadius = '12px';
-            } else if (type === 'circle') {
-                el.style.width = '160px';
+                el.style.width = '240px';
                 el.style.height = '160px';
+                el.style.background = 'linear-gradient(135deg, rgba(20,24,38,0.95), rgba(12,14,24,0.95))';
+                el.style.borderRadius = '16px';
+            } else if (type === 'circle') {
+                el.style.width = '180px';
+                el.style.height = '180px';
                 el.style.background = 'radial-gradient(circle, #0d99ff, #00f0ff)';
                 el.style.borderRadius = '50%';
             } else if (type === 'frame') {
-                el.style.width = '340px';
-                el.style.height = '480px';
-                el.style.background = '#141722';
-                el.style.borderRadius = '16px';
+                el.style.width = '360px';
+                el.style.height = '500px';
+                el.style.background = '#111422';
+                el.style.borderRadius = '24px';
             }
 
             el.innerHTML = `
-                <div class="artboard-title"><i class="fa-solid fa-shapes"></i> ${type.toUpperCase()} #${shapeCount}</div>
-                <div class="resize-handle rh-nw"></div>
-                <div class="resize-handle rh-ne"></div>
-                <div class="resize-handle rh-sw"></div>
-                <div class="resize-handle rh-se"></div>
+                <div class="artboard-header"><i class="fa-solid fa-shapes"></i> ${type.toUpperCase()} #${shpId}</div>
+                <div class="handle-point hp-nw"></div>
+                <div class="handle-point hp-ne"></div>
+                <div class="handle-point hp-sw"></div>
+                <div class="handle-point hp-se"></div>
             `;
 
             el.addEventListener('mousedown', (e) => {
@@ -1381,132 +1454,177 @@ border: ${border};`;
                 }
             });
 
-            canvasWorld.appendChild(el);
+            canvasStage.appendChild(el);
             selectElement(el);
-            rebuildLayers();
+            rebuildTree();
+            showToast(`Created ${type.toUpperCase()} layer`);
         }
 
-        // Rebuild Layers List
-        function rebuildLayers() {
-            const list = document.getElementById('layers-list');
-            list.innerHTML = '';
-            document.querySelectorAll('.artboard-frame').forEach(frame => {
-                const title = frame.querySelector('.artboard-title')?.innerText || frame.id;
-                const item = document.createElement('div');
-                item.className = `layer-item ${state.selectedElement === frame ? 'selected' : ''}`;
-                item.innerHTML = `
-                    <div class="layer-left">
-                        <i class="fa-regular fa-folder-closed"></i>
+        // Rebuild Layers Tree
+        function rebuildTree() {
+            const tree = document.getElementById('layers-tree');
+            tree.innerHTML = '';
+            document.querySelectorAll('.artboard-card').forEach(c => {
+                const title = c.querySelector('.artboard-header')?.innerText || c.id;
+                const itm = document.createElement('div');
+                itm.className = `tree-item ${state.selectedElement === c ? 'selected' : ''}`;
+                itm.innerHTML = `
+                    <div class="tree-item-title">
+                        <i class="fa-regular fa-folder"></i>
                         <span>${title}</span>
                     </div>
-                    <div class="layer-actions">
-                        <i class="fa-regular fa-eye" title="Hide/Show"></i>
-                        <i class="fa-solid fa-lock" title="Lock"></i>
-                    </div>
+                    <i class="fa-regular fa-eye" style="color: var(--text-dim);"></i>
                 `;
-                item.addEventListener('click', () => selectElement(frame));
-                list.appendChild(item);
+                itm.addEventListener('click', () => selectElement(c));
+                tree.appendChild(itm);
             });
         }
+        rebuildTree();
 
-        function updateLayersSelection() {
-            rebuildLayers();
-        }
-
-        rebuildLayers();
-
-        // Inspector Tabs (Design vs Dev Mode)
+        // Inspector Tabs
         const tabDesign = document.getElementById('tab-design');
-        const tabInspect = document.getElementById('tab-inspect');
-        const panelDesign = document.getElementById('panel-design');
-        const panelInspect = document.getElementById('panel-inspect');
+        const tabSpatial = document.getElementById('tab-spatial');
+        const tabDev = document.getElementById('tab-devmode');
+        const viewDesign = document.getElementById('view-design');
+        const viewSpatial = document.getElementById('view-spatial');
+        const viewDev = document.getElementById('view-devmode');
 
         tabDesign.addEventListener('click', () => {
+            playBlip(500);
             tabDesign.classList.add('active');
-            tabInspect.classList.remove('active');
-            panelDesign.style.display = 'block';
-            panelInspect.style.display = 'none';
+            tabSpatial.classList.remove('active');
+            tabDev.classList.remove('active');
+            viewDesign.style.display = 'block';
+            viewSpatial.style.display = 'none';
+            viewDev.style.display = 'none';
         });
 
-        tabInspect.addEventListener('click', () => {
-            tabInspect.classList.add('active');
+        tabSpatial.addEventListener('click', () => {
+            playBlip(500);
+            tabSpatial.classList.add('active');
             tabDesign.classList.remove('active');
-            panelInspect.style.display = 'block';
-            panelDesign.style.display = 'none';
+            tabDev.classList.remove('active');
+            viewSpatial.style.display = 'block';
+            viewDesign.style.display = 'none';
+            viewDev.style.display = 'none';
         });
 
-        // Copy Code utility
-        window.copyCode = function(id) {
-            const text = document.getElementById(id).textContent;
-            navigator.clipboard.writeText(text);
+        tabDev.addEventListener('click', () => {
+            playBlip(500);
+            tabDev.classList.add('active');
+            tabDesign.classList.remove('active');
+            tabSpatial.classList.remove('active');
+            viewDev.style.display = 'block';
+            viewDesign.style.display = 'none';
+            viewSpatial.style.display = 'none';
+            updateCodeOutput(440, 560, 20);
+        });
+
+        // 3D Camera Controls
+        document.getElementById('cam-tilt').addEventListener('input', (e) => {
+            state.tiltX = e.target.value;
+            if (state.isSpatial3D) updateTransform();
+        });
+        document.getElementById('cam-rot').addEventListener('input', (e) => {
+            state.rotZ = e.target.value;
+            if (state.isSpatial3D) updateTransform();
+        });
+
+        // Toast Helper
+        function showToast(msg) {
+            toast.textContent = msg;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        window.copyCode = function() {
+            playBlip(950);
+            navigator.clipboard.writeText(document.getElementById('code-output').textContent);
+            showToast("Compiled code copied to clipboard!");
         };
 
-        // Presentation Mode Modal
-        const btnPresent = document.getElementById('btn-present');
-        const btnClosePresent = document.getElementById('btn-close-present');
-        const presentModal = document.getElementById('present-modal');
+        // AI Modal Controls
+        const aiModal = document.getElementById('ai-modal');
+        document.getElementById('btn-open-ai').addEventListener('click', () => {
+            playBlip(800);
+            aiModal.classList.add('open');
+        });
+        document.getElementById('btn-close-ai').addEventListener('click', () => {
+            aiModal.classList.remove('open');
+        });
 
-        btnPresent.addEventListener('click', () => presentModal.classList.add('show'));
-        btnClosePresent.addEventListener('click', () => presentModal.classList.remove('show'));
+        window.generatePreset = function(type) {
+            playBlip(1100, 'triangle', 0.15);
+            aiModal.classList.remove('open');
+            showToast("✨ Synthesizing Spatial Component with AI...");
+            setTimeout(() => {
+                playBlip(880, 'sine', 0.2);
+                createShape('frame', 350, 220);
+                showToast("✨ Component successfully synthesized onto canvas!");
+            }, 600);
+        };
+
+        document.getElementById('btn-run-ai').addEventListener('click', () => {
+            const val = document.getElementById('ai-prompt-input').value;
+            generatePreset(val || 'custom');
+        });
 
         // Export SVG
         document.getElementById('btn-export-svg').addEventListener('click', () => {
-            const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="420" height="520" viewBox="0 0 420 520" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="420" height="520" rx="20" fill="#141721"/>
-  <rect x="20" y="20" width="380" height="480" rx="20" fill="#1a1d2a" stroke="#ffffff" stroke-opacity="0.1"/>
-  <text x="44" y="110" fill="#ffffff" font-family="Syne, sans-serif" font-weight="800" font-size="32">$4,892,120.40</text>
-  <path d="M44 260 Q 94 280, 134 230 T 214 210 T 294 250 T 376 180" stroke="#00f0ff" stroke-width="3" fill="none"/>
+            playBlip(700);
+            const svgData = `<svg width="440" height="560" viewBox="0 0 440 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="440" height="560" rx="20" fill="#111420"/>
+  <rect x="20" y="20" width="400" height="520" rx="20" fill="#141826" stroke="#00f0ff" stroke-width="2"/>
+  <text x="44" y="80" fill="#00f0ff" font-family="Inter, sans-serif" font-weight="800" font-size="12">QUANTUM ARBITRAGE</text>
+  <text x="44" y="130" fill="#ffffff" font-family="Syne, sans-serif" font-weight="900" font-size="36">$9,482,750.80</text>
+  <path d="M44 260 Q 104 290, 154 230 T 254 200 T 324 240 T 396 180" stroke="#00f0ff" stroke-width="3" fill="none"/>
 </svg>`;
-            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
+            const b = new Blob([svgData], { type: 'image/svg+xml' });
+            const u = URL.createObjectURL(b);
             const a = document.createElement('a');
-            a.href = url;
+            a.href = u;
             a.download = 'ApexVector_Artboard.svg';
             a.click();
-            URL.revokeObjectURL(url);
+            URL.revokeObjectURL(u);
+            showToast("Exported Artboard to SVG!");
         });
 
-        // Autonomous Simulated Multiplayer Movement
-        const cursorSarah = document.getElementById('cursor-sarah');
-        const cursorAlex = document.getElementById('cursor-alex');
-        const bubbleSarah = document.getElementById('bubble-sarah');
-        const bubbleAlex = document.getElementById('bubble-alex');
+        // Simulated Collaborators Waypoints
+        const curSarah = document.getElementById('cursor-sarah');
+        const curAlex = document.getElementById('cursor-alex');
+        const bubSarah = document.getElementById('bubble-sarah');
+        const bubAlex = document.getElementById('bubble-alex');
 
-        const sarahWaypoints = [
-            { x: 340, y: 320, text: "Increasing button shadow blur to 24px for better spatial depth." },
-            { x: 260, y: 180, text: "The sparkline bezier curve looks ultra clean here." },
-            { x: 380, y: 480, text: "Auto-layout gap updated to 16px." },
-            { x: 220, y: 340, text: "Aligned with master design tokens." }
+        const sPoints = [
+            { x: 360, y: 340, t: "Evaluating 3D Z-elevation tokens for spatial depth." },
+            { x: 260, y: 160, t: "Adjusting Quantum Arbitrage title letter-spacing." },
+            { x: 420, y: 500, t: "Mainnet Deploy button shadow blur tuned to 25px." },
+            { x: 210, y: 280, t: "Inspecting sparkline SVG gradient fill." }
         ];
 
-        const alexWaypoints = [
-            { x: 780, y: 240, text: "Inspecting glassmorphism backdrop-filter." },
-            { x: 840, y: 450, text: "Generated Tailwind classes match the React spec." },
-            { x: 680, y: 160, text: "Reviewing Dynamic Island layout bounds." }
+        const aPoints = [
+            { x: 820, y: 260, t: "Copying generated SwiftUI & React code to repo." },
+            { x: 880, y: 480, t: "Verified zero-copy eBPF kernel telemetry bounds." },
+            { x: 740, y: 180, t: "Testing iOS 18 Dynamic Island interactive island state." }
         ];
 
-        let sIdx = 0;
-        let aIdx = 0;
+        let sI = 0, aI = 0;
+        setInterval(() => {
+            sI = (sI + 1) % sPoints.length;
+            curSarah.style.transform = `translate3d(${sPoints[sI].x}px, ${sPoints[sI].y}px, 0)`;
+            bubSarah.textContent = sPoints[sI].t;
+        }, 4200);
 
         setInterval(() => {
-            sIdx = (sIdx + 1) % sarahWaypoints.length;
-            const wp = sarahWaypoints[sIdx];
-            cursorSarah.style.transform = `translate3d(${wp.x}px, ${wp.y}px, 0)`;
-            bubbleSarah.textContent = wp.text;
-        }, 4000);
+            aI = (aI + 1) % aPoints.length;
+            curAlex.style.transform = `translate3d(${aPoints[aI].x}px, ${aPoints[aI].y}px, 0)`;
+            bubAlex.style.display = 'block';
+            bubAlex.textContent = aPoints[aI].t;
+            setTimeout(() => { bubAlex.style.display = 'none'; }, 3200);
+        }, 5800);
 
-        setInterval(() => {
-            aIdx = (aIdx + 1) % alexWaypoints.length;
-            const wp = alexWaypoints[aIdx];
-            cursorAlex.style.transform = `translate3d(${wp.x}px, ${wp.y}px, 0)`;
-            bubbleAlex.style.display = 'block';
-            bubbleAlex.textContent = wp.text;
-            setTimeout(() => { bubbleAlex.style.display = 'none'; }, 3000);
-        }, 5500);
-
+        // Initial compile
+        updateCodeOutput(440, 560, 20);
     </script>
 </body>
 </html>
