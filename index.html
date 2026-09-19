@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ApexVector | Spatial Collaborative UI Design & Vector Engine</title>
+    <meta name="description" content="Institutional alternative to Figma. High-performance spatial vector canvas, reactive AST auto-layout, real-time simulated multiplayer presence, smart Bezier engine, and DevMode CSS/Tailwind compiler.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-canvas: #12141a;
+            --bg-panel: #1a1d26;
+            --bg-panel-header: #151820;
+            --bg-hover: rgba(255, 255, 255, 0.06);
+            --bg-active: rgba(29, 155, 240, 0.15);
+            --border-ui: rgba(255, 255, 255, 0.08);
+            --border-focus: #00f0ff;
+            --accent-blue: #0d99ff;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #9d4edd;
+            --accent-pink: #f72585;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --text-main: #f1f5f9;
+            --text-muted: #8892b0;
+            --text-dim: #4b5563;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Syne', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            --topbar-h: 46px;
+            --sidebar-w: 260px;
+            --inspector-w: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-canvas);
+            font-family: var(--font-sans);
+            color: var(--text-main);
+        }
+
+        /* Top Navigation Toolbar */
+        .topbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--bg-panel-header);
+            border-bottom: 1px solid var(--border-ui);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+            z-index: 100;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #fff;
+            letter-spacing: -0.5px;
+            background: rgba(13, 153, 255, 0.12);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(13, 153, 255, 0.3);
+            text-decoration: none;
+        }
+
+        .brand-pill i {
+            color: var(--accent-cyan);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .file-name {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-ui);
+            border-radius: 8px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .tool-btn {
+            width: 32px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+        .tool-btn.active {
+            background: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(13, 153, 255, 0.4);
+        }
+
+        .tool-btn .shortcut-hint {
+            position: absolute;
+            bottom: -18px;
+            background: #000;
+            color: #fff;
+            font-size: 0.65rem;
+            font-family: var(--font-mono);
+            padding: 2px 4px;
+            border-radius: 4px;
+            display: none;
+            pointer-events: none;
+            z-index: 200;
+            white-space: nowrap;
+        }
+
+        .tool-btn:hover .shortcut-hint {
+            display: block;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .multiplayer-stack {
+            display: flex;
+            align-items: center;
+            padding-right: 8px;
+            border-right: 1px solid var(--border-ui);
+        }
+
+        .avatar-bubble {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 2px solid var(--bg-panel-header);
+            margin-left: -6px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .avatar-bubble:first-child {
+            margin-left: 0;
+        }
+
+        .avatar-bubble.av-sarah { background: #9d4edd; color: #fff; }
+        .avatar-bubble.av-kenji { background: #10b981; color: #fff; }
+        .avatar-bubble.av-alex  { background: #f59e0b; color: #fff; }
+        .avatar-bubble.av-tareq { background: #00f0ff; color: #000; }
+
+        .btn-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-ui);
+        }
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0d99ff, #00f0ff);
+            color: #000;
+            font-weight: 700;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+        }
+
+        .zoom-badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        /* Workspace Main Layout */
+        .workspace {
+            position: absolute;
+            top: var(--topbar-h);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar: Layers & Assets */
+        .sidebar-left {
+            width: var(--sidebar-w);
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-ui);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-ui);
+            background: var(--bg-panel-header);
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-tab.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+
+        .layers-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 4px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-bottom: 2px;
+            transition: background 0.15s ease;
+        }
+
+        .layer-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+        .layer-item.selected {
+            background: rgba(13, 153, 255, 0.2);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .layer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .layer-item i {
+            width: 14px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .layer-actions {
+            display: none;
+            gap: 6px;
+            color: var(--text-dim);
+        }
+
+        .layer-item:hover .layer-actions,
+        .layer-item.selected .layer-actions {
+            display: flex;
+        }
+
+        .layer-actions i:hover {
+            color: var(--text-main);
+        }
+
+        /* Central Canvas Viewport */
+        .canvas-viewport {
+            flex: 1;
+            position: relative;
+            background-color: #0d0f14;
+            background-image: 
+                radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 24px 24px;
+            overflow: hidden;
+            cursor: default;
+        }
+
+        .canvas-viewport.panning {
+            cursor: grab !important;
+        }
+        .canvas-viewport.panning:active {
+            cursor: grabbing !important;
+        }
+
+        .canvas-world {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10000px;
+            height: 10000px;
+            transform-origin: 0 0;
+            will-change: transform;
+        }
+
+        /* Artboards on Canvas */
+        .artboard-frame {
+            position: absolute;
+            background: #141721;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            cursor: move;
+        }
+
+        .artboard-title {
+            position: absolute;
+            top: -24px;
+            left: 0;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .artboard-frame.selected {
+            outline: 2px solid var(--accent-blue);
+            box-shadow: 0 0 20px rgba(13, 153, 255, 0.3), 0 20px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .artboard-frame.selected .artboard-title {
+            color: var(--accent-cyan);
+        }
+
+        /* Mockup UI Elements inside Artboards */
+        .element-box {
+            position: absolute;
+            cursor: pointer;
+            transition: box-shadow 0.15s ease;
+        }
+
+        .element-box.selected {
+            outline: 2px solid var(--accent-cyan) !important;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        /* Resize handles */
+        .resize-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border: 1.5px solid var(--accent-blue);
+            border-radius: 2px;
+            display: none;
+            z-index: 50;
+        }
+
+        .element-box.selected .resize-handle,
+        .artboard-frame.selected .resize-handle {
+            display: block;
+        }
+
+        .rh-nw { top: -4px; left: -4px; cursor: nwse-resize; }
+        .rh-ne { top: -4px; right: -4px; cursor: nesw-resize; }
+        .rh-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+        .rh-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+
+        /* Simulated Multiplayer Cursors */
+        .mp-cursor {
+            position: absolute;
+            pointer-events: none;
+            z-index: 500;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .mp-cursor-pointer {
+            width: 14px;
+            height: 14px;
+        }
+
+        .mp-cursor-tag {
+            position: absolute;
+            left: 14px;
+            top: 14px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .cursor-sarah .mp-cursor-tag { background: #9d4edd; }
+        .cursor-kenji .mp-cursor-tag { background: #10b981; }
+        .cursor-alex .mp-cursor-tag  { background: #f59e0b; }
+
+        .cursor-comment-bubble {
+            position: absolute;
+            left: 14px;
+            top: 36px;
+            background: rgba(20, 23, 33, 0.95);
+            border: 1px solid var(--border-ui);
+            backdrop-filter: blur(8px);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            color: var(--text-main);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            max-width: 220px;
+            line-height: 1.3;
+        }
+
+        /* Right Sidebar: Inspector & Dev Mode */
+        .sidebar-right {
+            width: var(--inspector-w);
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-ui);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .inspector-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-ui);
+            background: var(--bg-panel-header);
+        }
+
+        .inspector-tab {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .inspector-tab.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+
+        .inspector-tab.dev-mode.active {
+            color: #10b981;
+            border-bottom-color: #10b981;
+        }
+
+        .inspector-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+        }
+
+        .prop-section {
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-ui);
+        }
+
+        .prop-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .prop-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .prop-input-wrap {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-ui);
+            border-radius: 6px;
+            padding: 4px 8px;
+            gap: 6px;
+        }
+
+        .prop-label {
+            font-size: 0.68rem;
+            font-family: var(--font-mono);
+            color: var(--text-dim);
+            font-weight: 600;
+            width: 12px;
+        }
+
+        .prop-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 0.78rem;
+            font-family: var(--font-mono);
+            outline: none;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-ui);
+            border-radius: 6px;
+            padding: 6px 10px;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+        }
+
+        .color-hex {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .btn-flex-row {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-ui);
+            border-radius: 6px;
+            padding: 3px;
+        }
+
+        .btn-flex-opt {
+            flex: 1;
+            padding: 4px 0;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            border-radius: 4px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-flex-opt.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* DevMode Code Panel */
+        .code-box {
+            background: #0d0f14;
+            border: 1px solid var(--border-ui);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: #38bdf8;
+            line-height: 1.4;
+            max-height: 220px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .btn-copy {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-ui);
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-copy:hover {
+            background: var(--accent-emerald);
+            color: #000;
+            font-weight: 700;
+        }
+
+        /* Prototype Presentation Modal */
+        .present-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .present-modal.show {
+            display: flex;
+        }
+
+        .present-toolbar {
+            position: absolute;
+            top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(26, 29, 38, 0.85);
+            border: 1px solid var(--border-ui);
+            padding: 8px 18px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .phone-mockup {
+            width: 380px;
+            height: 740px;
+            background: #000;
+            border: 4px solid #2d323f;
+            border-radius: 48px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #11141e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dynamic-island {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 28px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 10px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: #000;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Topbar Navigation -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <a href="https://tareq0001.github.io/" class="brand-pill" title="Return to Portfolio">
+                <i class="fa-solid fa-shapes"></i> APEX.VECTOR
+            </a>
+            <div class="file-info">
+                <span>/</span>
+                <span class="file-name">Spatial Autonomous Design System v4.2</span>
+                <span class="zoom-badge" id="zoom-indicator">100%</span>
+            </div>
+        </div>
+
+        <!-- Central Tools -->
+        <div class="tool-group">
+            <button class="tool-btn active" id="tool-select" title="Select / Move (V)">
+                <i class="fa-solid fa-arrow-pointer"></i>
+                <span class="shortcut-hint">V</span>
+            </button>
+            <button class="tool-btn" id="tool-frame" title="Artboard Frame (F)">
+                <i class="fa-regular fa-square"></i>
+                <span class="shortcut-hint">F</span>
+            </button>
+            <button class="tool-btn" id="tool-rect" title="Rectangle (R)">
+                <i class="fa-solid fa-vector-square"></i>
+                <span class="shortcut-hint">R</span>
+            </button>
+            <button class="tool-btn" id="tool-circle" title="Ellipse (O)">
+                <i class="fa-regular fa-circle"></i>
+                <span class="shortcut-hint">O</span>
+            </button>
+            <button class="tool-btn" id="tool-pen" title="Bezier Pen Tool (P)">
+                <i class="fa-solid fa-bezier-curve"></i>
+                <span class="shortcut-hint">P</span>
+            </button>
+            <button class="tool-btn" id="tool-text" title="Text (T)">
+                <i class="fa-solid fa-t"></i>
+                <span class="shortcut-hint">T</span>
+            </button>
+            <button class="tool-btn" id="tool-hand" title="Hand Pan (H)">
+                <i class="fa-regular fa-hand"></i>
+                <span class="shortcut-hint">H</span>
+            </button>
+        </div>
+
+        <!-- Right Options -->
+        <div class="topbar-right">
+            <div class="multiplayer-stack" title="Autonomous Collaborators Active">
+                <div class="avatar-bubble av-tareq" title="You (Tareq - Architect)">T</div>
+                <div class="avatar-bubble av-sarah" title="Sarah (Product Designer)">S</div>
+                <div class="avatar-bubble av-kenji" title="Kenji (Design Lead)">K</div>
+                <div class="avatar-bubble av-alex" title="Alex (Frontend Dev)">A</div>
+            </div>
+
+            <button class="btn-action btn-ghost" id="btn-export-svg">
+                <i class="fa-solid fa-download"></i> Export SVG
+            </button>
+            <button class="btn-action btn-primary" id="btn-present">
+                <i class="fa-solid fa-play"></i> Present
+            </button>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <main class="workspace">
+        
+        <!-- Left Layers Tree -->
+        <aside class="sidebar-left">
+            <div class="sidebar-tabs">
+                <div class="sidebar-tab active" id="tab-layers">Layers</div>
+                <div class="sidebar-tab" id="tab-assets">Assets & Tokens</div>
+            </div>
+
+            <div class="layers-tree" id="layers-list">
+                <!-- Dynamically populated layers -->
+            </div>
+        </aside>
+
+        <!-- Main Infinite Canvas -->
+        <section class="canvas-viewport" id="canvas-viewport">
+            <div class="canvas-world" id="canvas-world">
+
+                <!-- Artboard 1: SaaS Financial Card -->
+                <div class="artboard-frame" id="ab-saas" style="left: 120px; top: 100px; width: 420px; height: 520px;">
+                    <div class="artboard-title">
+                        <i class="fa-solid fa-layer-group"></i> SaaS Financial Card #1
+                    </div>
+                    
+                    <div class="resize-handle rh-nw"></div>
+                    <div class="resize-handle rh-ne"></div>
+                    <div class="resize-handle rh-sw"></div>
+                    <div class="resize-handle rh-se"></div>
+
+                    <!-- Inner Mockup Elements -->
+                    <div class="element-box" id="el-card-bg" style="left: 20px; top: 20px; width: 380px; height: 480px; background: linear-gradient(135deg, rgba(26,29,42,0.95), rgba(16,18,26,0.95)); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); padding: 24px;">
+                        
+                        <div class="element-box" id="el-badge" style="left: 24px; top: 24px; background: rgba(0,240,255,0.15); border: 1px solid rgba(0,240,255,0.3); border-radius: 20px; padding: 4px 12px; color: #00f0ff; font-size: 11px; font-weight: 700;">
+                            FINTECH ENGINE
+                        </div>
+
+                        <div class="element-box" id="el-balance-title" style="left: 24px; top: 64px; color: #94a3b8; font-size: 12px; font-weight: 500;">
+                            PORTFOLIO ASSETS
+                        </div>
+
+                        <div class="element-box" id="el-balance-val" style="left: 24px; top: 86px; color: #ffffff; font-size: 32px; font-weight: 800; font-family: 'Syne', sans-serif;">
+                            $4,892,120.40
+                        </div>
+
+                        <div class="element-box" id="el-delta" style="left: 24px; top: 132px; color: #10b981; font-size: 13px; font-weight: 700;">
+                            <i class="fa-solid fa-arrow-trend-up"></i> +18.4% (+$612,400)
+                        </div>
+
+                        <!-- Sparkline SVG -->
+                        <div class="element-box" id="el-sparkline" style="left: 24px; top: 170px; width: 332px; height: 120px;">
+                            <svg width="332" height="120" viewBox="0 0 332 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 90 Q 50 110, 90 60 T 170 40 T 250 80 T 332 10" stroke="#00f0ff" stroke-width="3" fill="none"/>
+                                <path d="M0 90 Q 50 110, 90 60 T 170 40 T 250 80 T 332 10 L 332 120 L 0 120 Z" fill="url(#spark-grad)" opacity="0.3"/>
+                                <defs>
+                                    <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#00f0ff" stop-opacity="0.8"/>
+                                        <stop offset="1" stop-color="#00f0ff" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="element-box" id="el-cta-btn" style="left: 24px; top: 380px; width: 332px; height: 48px; background: linear-gradient(135deg, #0d99ff, #00f0ff); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 14px; box-shadow: 0 8px 24px rgba(0,240,255,0.35);">
+                            EXECUTE REBALANCE
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Artboard 2: iOS Spatial Mobile App Screen -->
+                <div class="artboard-frame" id="ab-mobile" style="left: 620px; top: 100px; width: 375px; height: 680px; border-radius: 40px;">
+                    <div class="artboard-title">
+                        <i class="fa-solid fa-mobile-screen"></i> iOS Spatial Client Screen
+                    </div>
+
+                    <div class="resize-handle rh-nw"></div>
+                    <div class="resize-handle rh-ne"></div>
+                    <div class="resize-handle rh-sw"></div>
+                    <div class="resize-handle rh-se"></div>
+
+                    <!-- Dynamic Island Notch -->
+                    <div class="element-box" style="left: 132px; top: 12px; width: 110px; height: 26px; background: #000; border-radius: 18px; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; margin-right: 6px;"></div>
+                        <span style="font-size: 9px; color: #fff; font-weight: 600;">ACTIVE</span>
+                    </div>
+
+                    <!-- Header Profile -->
+                    <div class="element-box" style="left: 24px; top: 60px; display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #9d4edd, #00f0ff); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff;">TA</div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 700; color: #fff;">Tareq Aboushi</div>
+                            <div style="font-size: 11px; color: #94a3b8;">Chief AI Architect</div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Glass Card -->
+                    <div class="element-box" id="el-mob-card" style="left: 24px; top: 130px; width: 327px; height: 220px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; backdrop-filter: blur(16px); padding: 20px;">
+                        <div style="font-size: 11px; font-weight: 700; color: #9d4edd; letter-spacing: 1px;">QUANTUM NODE // 09</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-top: 6px;">Aether Mesh Core</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">Superconducting qubit state synchronized at 99.98% fidelity.</div>
+
+                        <!-- Progress Bar -->
+                        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 24px; overflow: hidden;">
+                            <div style="width: 78%; height: 100%; background: linear-gradient(90deg, #9d4edd, #00f0ff);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Nav Dock -->
+                    <div class="element-box" style="left: 24px; bottom: 24px; width: 327px; height: 60px; background: rgba(20,23,35,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: space-around;">
+                        <i class="fa-solid fa-house" style="color: #00f0ff; font-size: 18px;"></i>
+                        <i class="fa-solid fa-chart-pie" style="color: #64748b; font-size: 18px;"></i>
+                        <i class="fa-solid fa-shield" style="color: #64748b; font-size: 18px;"></i>
+                        <i class="fa-solid fa-gear" style="color: #64748b; font-size: 18px;"></i>
+                    </div>
+                </div>
+
+                <!-- Simulated Collaborator Cursors -->
+                <div class="mp-cursor cursor-sarah" id="cursor-sarah" style="transform: translate3d(340px, 320px, 0);">
+                    <svg class="mp-cursor-pointer" viewBox="0 0 16 16" fill="none">
+                        <path d="M0 0 L14 5 L8 8 L5 14 Z" fill="#9d4edd" stroke="#ffffff" stroke-width="1.5"/>
+                    </svg>
+                    <div class="mp-cursor-tag">Sarah [UI Designer]</div>
+                    <div class="cursor-comment-bubble" id="bubble-sarah">
+                        "Increasing button shadow blur to 24px for better spatial depth."
+                    </div>
+                </div>
+
+                <div class="mp-cursor cursor-alex" id="cursor-alex" style="transform: translate3d(780px, 240px, 0);">
+                    <svg class="mp-cursor-pointer" viewBox="0 0 16 16" fill="none">
+                        <path d="M0 0 L14 5 L8 8 L5 14 Z" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+                    </svg>
+                    <div class="mp-cursor-tag">Alex [Frontend Lead]</div>
+                    <div class="cursor-comment-bubble" id="bubble-alex" style="display: none;">
+                        "Copying generated Tailwind tokens to the repo."
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Right Inspector Panel -->
+        <aside class="sidebar-right">
+            <div class="inspector-tabs">
+                <div class="inspector-tab active" id="tab-design">Design</div>
+                <div class="inspector-tab" id="tab-proto">Prototype</div>
+                <div class="inspector-tab dev-mode" id="tab-inspect">
+                    <i class="fa-solid fa-code"></i> Dev Mode
+                </div>
+            </div>
+
+            <div class="inspector-body" id="inspector-content">
+                
+                <!-- Design Tab Content -->
+                <div id="panel-design">
+                    <!-- Position & Dimensions -->
+                    <div class="prop-section">
+                        <div class="prop-title">Frame & Transform</div>
+                        <div class="prop-grid-2">
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">X</span>
+                                <input type="number" class="prop-input" id="prop-x" value="120">
+                            </div>
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">Y</span>
+                                <input type="number" class="prop-input" id="prop-y" value="100">
+                            </div>
+                        </div>
+                        <div class="prop-grid-2">
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">W</span>
+                                <input type="number" class="prop-input" id="prop-w" value="420">
+                            </div>
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">H</span>
+                                <input type="number" class="prop-input" id="prop-h" value="520">
+                            </div>
+                        </div>
+                        <div class="prop-grid-2">
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">R</span>
+                                <input type="number" class="prop-input" id="prop-radius" value="20">
+                            </div>
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">∡</span>
+                                <input type="number" class="prop-input" id="prop-rot" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auto-Layout Flexbox -->
+                    <div class="prop-section">
+                        <div class="prop-title">Auto-Layout Engine</div>
+                        <div class="btn-flex-row" style="margin-bottom: 8px;">
+                            <button class="btn-flex-opt active" id="flex-col">Vertical ↓</button>
+                            <button class="btn-flex-opt" id="flex-row">Horizontal →</button>
+                            <button class="btn-flex-opt" id="flex-wrap">Wrap ↵</button>
+                        </div>
+                        <div class="prop-grid-2">
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">Pad</span>
+                                <input type="number" class="prop-input" id="prop-pad" value="24">
+                            </div>
+                            <div class="prop-input-wrap">
+                                <span class="prop-label">Gap</span>
+                                <input type="number" class="prop-input" id="prop-gap" value="16">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fill Color & Glass -->
+                    <div class="prop-section">
+                        <div class="prop-title">Appearance & Fill</div>
+                        <div class="color-row">
+                            <div class="color-swatch" id="swatch-fill" style="background: #00f0ff;"></div>
+                            <input type="text" class="color-hex" id="hex-fill" value="#00f0ff">
+                            <input type="number" class="prop-input" id="opacity-fill" value="100" style="width: 45px;">%
+                        </div>
+                    </div>
+
+                    <!-- Effects / Glow -->
+                    <div class="prop-section">
+                        <div class="prop-title">Spatial Effects</div>
+                        <div class="prop-input-wrap" style="margin-bottom: 8px;">
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Backdrop Blur:</span>
+                            <input type="range" min="0" max="40" value="16" id="blur-slider" style="flex:1; accent-color: var(--accent-cyan);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dev Mode Content (Hidden by default) -->
+                <div id="panel-inspect" style="display: none;">
+                    <div class="prop-section">
+                        <div class="code-header">
+                            <span class="prop-title" style="margin-bottom:0;">Tailwind CSS Classes</span>
+                            <button class="btn-copy" onclick="copyCode('code-tw')">Copy</button>
+                        </div>
+                        <div class="code-box" id="code-tw">p-6 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl shadow-cyan-500/20</div>
+                    </div>
+
+                    <div class="prop-section">
+                        <div class="code-header">
+                            <span class="prop-title" style="margin-bottom:0;">Native CSS3 Styles</span>
+                            <button class="btn-copy" onclick="copyCode('code-css')">Copy</button>
+                        </div>
+                        <div class="code-box" id="code-css">background: rgba(16, 18, 26, 0.95);
+border: 1px solid rgba(255, 255, 255, 0.1);
+border-radius: 20px;
+backdrop-filter: blur(16px);
+box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);</div>
+                    </div>
+
+                    <div class="prop-section">
+                        <div class="code-header">
+                            <span class="prop-title" style="margin-bottom:0;">React JSX Component</span>
+                            <button class="btn-copy" onclick="copyCode('code-jsx')">Copy</button>
+                        </div>
+                        <div class="code-box" id="code-jsx">&lt;div className="relative p-6 rounded-2xl bg-[#10121a]/95 backdrop-blur-lg border border-white/10 shadow-2xl"&gt;
+  &lt;ApexFinancialCard balance={4892120.40} delta="+18.4%" /&gt;
+&lt;/div&gt;</div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Presentation Modal (Figma Present / Play) -->
+    <div class="present-modal" id="present-modal">
+        <div class="present-toolbar">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #fff;">
+                <i class="fa-solid fa-play" style="color: #10b981; margin-right: 6px;"></i> Live Prototype Preview
+            </span>
+            <button class="btn-action btn-ghost" id="btn-close-present">
+                <i class="fa-solid fa-xmark"></i> Close Preview
+            </button>
+        </div>
+
+        <div class="phone-mockup">
+            <div class="dynamic-island">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #00f0ff;"></div>
+                <span style="font-size: 9px; color: #fff; font-weight: 700;">PROTOTYPE</span>
+            </div>
+            <iframe id="present-iframe" style="width: 100%; height: 100%; border: none; background: #0b0d14;" srcdoc="
+                <body style='margin:0; padding:24px; font-family:sans-serif; color:#fff; background:#0d0f17; display:flex; flex-direction:column; justify-content:center; align-items:center; height:90vh; text-align:center;'>
+                    <h2 style='font-size:24px; margin-bottom:12px; color:#00f0ff;'>ApexVector Interactive Screen</h2>
+                    <p style='color:#94a3b8; font-size:14px; max-width:280px; line-height:1.5;'>Interactive touch prototype running at 60 FPS with micro-interactions and smart animate.</p>
+                    <button style='margin-top:24px; padding:14px 28px; border-radius:12px; background:linear-gradient(135deg,#0d99ff,#00f0ff); border:none; color:#000; font-weight:800; cursor:pointer;' onclick='alert(\'Prototype Micro-interaction Verified!\')'>TAP TO TEST</button>
+                </body>
+            "></iframe>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <!-- Interactive Script -->
+    <script>
+        // State
+        const state = {
+            zoom: 1.0,
+            panX: 0,
+            panY: 0,
+            isPanning: false,
+            startX: 0,
+            startY: 0,
+            activeTool: 'select',
+            selectedElement: null,
+            draggedElement: null,
+            elemStartX: 0,
+            elemStartY: 0
+        };
+
+        const canvasViewport = document.getElementById('canvas-viewport');
+        const canvasWorld = document.getElementById('canvas-world');
+        const zoomIndicator = document.getElementById('zoom-indicator');
+        const toast = document.getElementById('toast');
+
+        // Apply zoom and pan transformation
+        function updateTransform() {
+            canvasWorld.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            zoomIndicator.textContent = `${Math.round(state.zoom * 100)}%`;
+        }
+
+        // Mouse Wheel: Zoom
+        canvasViewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+            const newZoom = Math.min(Math.max(state.zoom * zoomFactor, 0.2), 4.0);
+
+            // Zoom centered on cursor
+            const rect = canvasViewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            state.panX = mouseX - (mouseX - state.panX) * (newZoom / state.zoom);
+            state.panY = mouseY - (mouseY - state.panY) * (newZoom / state.zoom);
+            state.zoom = newZoom;
+
+            updateTransform();
+        }, { passive: false });
+
+        // Pan with Space / Middle Click / Hand tool
+        let isSpacePressed = false;
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isSpacePressed) {
+                isSpacePressed = true;
+                canvasViewport.classList.add('panning');
+            }
+            if (e.key === 'v' || e.key === 'V') setTool('select');
+            if (e.key === 'f' || e.key === 'F') setTool('frame');
+            if (e.key === 'r' || e.key === 'R') setTool('rect');
+            if (e.key === 'o' || e.key === 'O') setTool('circle');
+            if (e.key === 'p' || e.key === 'P') setTool('pen');
+            if (e.key === 't' || e.key === 'T') setTool('text');
+            if (e.key === 'h' || e.key === 'H') setTool('hand');
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                isSpacePressed = false;
+                if (state.activeTool !== 'hand') {
+                    canvasViewport.classList.remove('panning');
+                }
+            }
+        });
+
+        canvasViewport.addEventListener('mousedown', (e) => {
+            if (e.button === 1 || isSpacePressed || state.activeTool === 'hand') {
+                state.isPanning = true;
+                state.startX = e.clientX - state.panX;
+                state.startY = e.clientY - state.panY;
+                canvasViewport.classList.add('panning');
+                return;
+            }
+
+            // Element creation tools
+            if (state.activeTool === 'rect' || state.activeTool === 'circle' || state.activeTool === 'frame') {
+                const rect = canvasViewport.getBoundingClientRect();
+                const worldX = (e.clientX - rect.left - state.panX) / state.zoom;
+                const worldY = (e.clientY - rect.top - state.panY) / state.zoom;
+                createShape(state.activeTool, worldX, worldY);
+                setTool('select');
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (state.isPanning) {
+                state.panX = e.clientX - state.startX;
+                state.panY = e.clientY - state.startY;
+                updateTransform();
+                return;
+            }
+
+            // Dragging selected element
+            if (state.draggedElement) {
+                const dx = (e.clientX - state.elemStartX) / state.zoom;
+                const dy = (e.clientY - state.elemStartY) / state.zoom;
+                
+                const curLeft = parseFloat(state.draggedElement.style.left) || 0;
+                const curTop = parseFloat(state.draggedElement.style.top) || 0;
+
+                state.draggedElement.style.left = `${Math.round(curLeft + dx)}px`;
+                state.draggedElement.style.top = `${Math.round(curTop + dy)}px`;
+
+                document.getElementById('prop-x').value = Math.round(curLeft + dx);
+                document.getElementById('prop-y').value = Math.round(curTop + dy);
+
+                state.elemStartX = e.clientX;
+                state.elemStartY = e.clientY;
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            state.isPanning = false;
+            state.draggedElement = null;
+            if (!isSpacePressed && state.activeTool !== 'hand') {
+                canvasViewport.classList.remove('panning');
+            }
+        });
+
+        // Tool Selection
+        function setTool(toolName) {
+            state.activeTool = toolName;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById(`tool-${toolName}`);
+            if (btn) btn.classList.add('active');
+
+            if (toolName === 'hand') {
+                canvasViewport.classList.add('panning');
+            } else if (!isSpacePressed) {
+                canvasViewport.classList.remove('panning');
+            }
+        }
+
+        ['select', 'frame', 'rect', 'circle', 'pen', 'text', 'hand'].forEach(t => {
+            const b = document.getElementById(`tool-${t}`);
+            if (b) b.addEventListener('click', () => setTool(t));
+        });
+
+        // Select Element
+        function selectElement(el) {
+            if (state.selectedElement) {
+                state.selectedElement.classList.remove('selected');
+            }
+            state.selectedElement = el;
+            if (el) {
+                el.classList.add('selected');
+                updateInspectorValues(el);
+            }
+            updateLayersSelection();
+        }
+
+        function updateInspectorValues(el) {
+            const x = Math.round(parseFloat(el.style.left) || 0);
+            const y = Math.round(parseFloat(el.style.top) || 0);
+            const w = Math.round(parseFloat(el.style.width) || el.offsetWidth);
+            const h = Math.round(parseFloat(el.style.height) || el.offsetHeight);
+            const r = Math.round(parseFloat(el.style.borderRadius) || 0);
+
+            document.getElementById('prop-x').value = x;
+            document.getElementById('prop-y').value = y;
+            document.getElementById('prop-w').value = w;
+            document.getElementById('prop-h').value = h;
+            document.getElementById('prop-radius').value = r;
+
+            // Update code view
+            const bg = el.style.background || 'rgba(16, 18, 26, 0.95)';
+            const border = el.style.border || '1px solid rgba(255, 255, 255, 0.1)';
+            document.getElementById('code-css').textContent = 
+`width: ${w}px;
+height: ${h}px;
+background: ${bg};
+border-radius: ${r}px;
+border: ${border};`;
+        }
+
+        // Click handlers on artboards & elements
+        document.querySelectorAll('.artboard-frame, .element-box').forEach(el => {
+            el.addEventListener('mousedown', (e) => {
+                if (state.activeTool === 'select') {
+                    e.stopPropagation();
+                    selectElement(el);
+                    state.draggedElement = el;
+                    state.elemStartX = e.clientX;
+                    state.elemStartY = e.clientY;
+                }
+            });
+        });
+
+        // Create new shape dynamically
+        let shapeCount = 1;
+        function createShape(type, x, y) {
+            const el = document.createElement('div');
+            el.className = 'artboard-frame';
+            el.id = `custom-${type}-${shapeCount++}`;
+            el.style.left = `${Math.round(x)}px`;
+            el.style.top = `${Math.round(y)}px`;
+
+            if (type === 'rect') {
+                el.style.width = '200px';
+                el.style.height = '140px';
+                el.style.background = '#1e2330';
+                el.style.borderRadius = '12px';
+            } else if (type === 'circle') {
+                el.style.width = '160px';
+                el.style.height = '160px';
+                el.style.background = 'radial-gradient(circle, #0d99ff, #00f0ff)';
+                el.style.borderRadius = '50%';
+            } else if (type === 'frame') {
+                el.style.width = '340px';
+                el.style.height = '480px';
+                el.style.background = '#141722';
+                el.style.borderRadius = '16px';
+            }
+
+            el.innerHTML = `
+                <div class="artboard-title"><i class="fa-solid fa-shapes"></i> ${type.toUpperCase()} #${shapeCount}</div>
+                <div class="resize-handle rh-nw"></div>
+                <div class="resize-handle rh-ne"></div>
+                <div class="resize-handle rh-sw"></div>
+                <div class="resize-handle rh-se"></div>
+            `;
+
+            el.addEventListener('mousedown', (e) => {
+                if (state.activeTool === 'select') {
+                    e.stopPropagation();
+                    selectElement(el);
+                    state.draggedElement = el;
+                    state.elemStartX = e.clientX;
+                    state.elemStartY = e.clientY;
+                }
+            });
+
+            canvasWorld.appendChild(el);
+            selectElement(el);
+            rebuildLayers();
+        }
+
+        // Rebuild Layers List
+        function rebuildLayers() {
+            const list = document.getElementById('layers-list');
+            list.innerHTML = '';
+            document.querySelectorAll('.artboard-frame').forEach(frame => {
+                const title = frame.querySelector('.artboard-title')?.innerText || frame.id;
+                const item = document.createElement('div');
+                item.className = `layer-item ${state.selectedElement === frame ? 'selected' : ''}`;
+                item.innerHTML = `
+                    <div class="layer-left">
+                        <i class="fa-regular fa-folder-closed"></i>
+                        <span>${title}</span>
+                    </div>
+                    <div class="layer-actions">
+                        <i class="fa-regular fa-eye" title="Hide/Show"></i>
+                        <i class="fa-solid fa-lock" title="Lock"></i>
+                    </div>
+                `;
+                item.addEventListener('click', () => selectElement(frame));
+                list.appendChild(item);
+            });
+        }
+
+        function updateLayersSelection() {
+            rebuildLayers();
+        }
+
+        rebuildLayers();
+
+        // Inspector Tabs (Design vs Dev Mode)
+        const tabDesign = document.getElementById('tab-design');
+        const tabInspect = document.getElementById('tab-inspect');
+        const panelDesign = document.getElementById('panel-design');
+        const panelInspect = document.getElementById('panel-inspect');
+
+        tabDesign.addEventListener('click', () => {
+            tabDesign.classList.add('active');
+            tabInspect.classList.remove('active');
+            panelDesign.style.display = 'block';
+            panelInspect.style.display = 'none';
+        });
+
+        tabInspect.addEventListener('click', () => {
+            tabInspect.classList.add('active');
+            tabDesign.classList.remove('active');
+            panelInspect.style.display = 'block';
+            panelDesign.style.display = 'none';
+        });
+
+        // Copy Code utility
+        window.copyCode = function(id) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text);
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        };
+
+        // Presentation Mode Modal
+        const btnPresent = document.getElementById('btn-present');
+        const btnClosePresent = document.getElementById('btn-close-present');
+        const presentModal = document.getElementById('present-modal');
+
+        btnPresent.addEventListener('click', () => presentModal.classList.add('show'));
+        btnClosePresent.addEventListener('click', () => presentModal.classList.remove('show'));
+
+        // Export SVG
+        document.getElementById('btn-export-svg').addEventListener('click', () => {
+            const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="420" height="520" viewBox="0 0 420 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="420" height="520" rx="20" fill="#141721"/>
+  <rect x="20" y="20" width="380" height="480" rx="20" fill="#1a1d2a" stroke="#ffffff" stroke-opacity="0.1"/>
+  <text x="44" y="110" fill="#ffffff" font-family="Syne, sans-serif" font-weight="800" font-size="32">$4,892,120.40</text>
+  <path d="M44 260 Q 94 280, 134 230 T 214 210 T 294 250 T 376 180" stroke="#00f0ff" stroke-width="3" fill="none"/>
+</svg>`;
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ApexVector_Artboard.svg';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Autonomous Simulated Multiplayer Movement
+        const cursorSarah = document.getElementById('cursor-sarah');
+        const cursorAlex = document.getElementById('cursor-alex');
+        const bubbleSarah = document.getElementById('bubble-sarah');
+        const bubbleAlex = document.getElementById('bubble-alex');
+
+        const sarahWaypoints = [
+            { x: 340, y: 320, text: "Increasing button shadow blur to 24px for better spatial depth." },
+            { x: 260, y: 180, text: "The sparkline bezier curve looks ultra clean here." },
+            { x: 380, y: 480, text: "Auto-layout gap updated to 16px." },
+            { x: 220, y: 340, text: "Aligned with master design tokens." }
+        ];
+
+        const alexWaypoints = [
+            { x: 780, y: 240, text: "Inspecting glassmorphism backdrop-filter." },
+            { x: 840, y: 450, text: "Generated Tailwind classes match the React spec." },
+            { x: 680, y: 160, text: "Reviewing Dynamic Island layout bounds." }
+        ];
+
+        let sIdx = 0;
+        let aIdx = 0;
+
+        setInterval(() => {
+            sIdx = (sIdx + 1) % sarahWaypoints.length;
+            const wp = sarahWaypoints[sIdx];
+            cursorSarah.style.transform = `translate3d(${wp.x}px, ${wp.y}px, 0)`;
+            bubbleSarah.textContent = wp.text;
+        }, 4000);
+
+        setInterval(() => {
+            aIdx = (aIdx + 1) % alexWaypoints.length;
+            const wp = alexWaypoints[aIdx];
+            cursorAlex.style.transform = `translate3d(${wp.x}px, ${wp.y}px, 0)`;
+            bubbleAlex.style.display = 'block';
+            bubbleAlex.textContent = wp.text;
+            setTimeout(() => { bubbleAlex.style.display = 'none'; }, 3000);
+        }, 5500);
+
+    </script>
+</body>
+</html>
